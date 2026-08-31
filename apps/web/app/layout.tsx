@@ -1,29 +1,48 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Vazirmatn } from "next/font/google"
 
 import "@workspace/ui/globals.css"
+import { cn } from "@workspace/ui/lib/utils"
+import { Toaster } from "@workspace/ui/components/sonner"
+
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@workspace/ui/lib/utils";
+import { fa } from "@/lib/fa"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+// Vazirmatn carries the Persian glyphs and the Latin digits the sheets print
+// their numbers in, so one family covers the whole app.
+const vazirmatn = Vazirmatn({
+  subsets: ["arabic", "latin"],
+  variable: "--font-sans",
+  display: "swap",
 })
+
+export const metadata: Metadata = {
+  title: fa.appName,
+  description: "مدیریت فاکتور، حساب، فیش مزاد و فیش من",
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-      lang="en"
+      lang="fa"
+      dir="rtl"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn("font-sans antialiased", vazirmatn.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   )

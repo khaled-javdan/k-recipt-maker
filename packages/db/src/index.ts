@@ -1,8 +1,8 @@
 import { PrismaNeon } from "@prisma/adapter-neon"
 
-import { PrismaClient } from "../generated/client/client.js"
+import { PrismaClient } from "../generated/client/client"
 
-export * from "../generated/client/client.js"
+export * from "../generated/client/client"
 
 // Next.js reloads modules on every edit in development, and each reload would
 // otherwise open a fresh connection pool until Neon refuses new ones. Holding

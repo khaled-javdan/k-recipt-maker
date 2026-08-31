@@ -1,4 +1,4 @@
-import type { Prisma } from "../generated/client/client.js"
+import type { Prisma } from "../generated/client/client"
 
 // Postgres stores money and weights as exact decimals; the calculation core
 // works in plain numbers. Everything crossing out of the database goes through

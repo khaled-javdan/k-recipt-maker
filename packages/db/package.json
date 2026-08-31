@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./mappers": "./src/mappers.ts"
+    "./mappers": "./src/mappers.ts",
+    "./password": "./src/password.ts"
   },
   "scripts": {
     "db:generate": "prisma generate",
@@ -18,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20.19.41",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
@@ -29,6 +31,7 @@
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-neon": "^7.10.0",
     "@prisma/client": "7.10.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "prisma": "7.10.0"
   }

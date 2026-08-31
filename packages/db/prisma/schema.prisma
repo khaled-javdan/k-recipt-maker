@@ -13,6 +13,13 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/client"
+
+  // The generated client is TypeScript source consumed straight by Turbopack.
+  // Extensionless imports are what a bundler resolves; the default ".js"
+  // specifiers point at files that do not exist on disk.
+  moduleFormat        = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension  = ""
 }
 
 // Prisma 7 keeps connection URLs out of the schema: migrations read them from

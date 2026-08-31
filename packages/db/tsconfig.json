@@ -1,6 +1,11 @@
 {
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
+    // Consumed as source by Next (via transpilePackages) and by tsx for the
+    // seed scripts, so resolution is bundler-style and imports are
+    // extensionless — the generated Prisma client is .ts, not .js.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true
   },
   "include": ["src/**/*.ts", "prisma/**/*.ts", "prisma.config.ts", "generated/**/*.ts"],
