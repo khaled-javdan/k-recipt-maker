@@ -8,8 +8,10 @@ export * from "../generated/client/client"
 // otherwise open a fresh connection pool until Neon refuses new ones. Holding
 // the client on globalThis keeps one pool across reloads.
 const globalForPrisma = globalThis as unknown as {
-  prisma?: ReturnType<typeof createClient>
+  prisma?: PrismaClient
 }
+
+let client: PrismaClient | undefined
 
 function createClient() {
   const connectionString = process.env.DATABASE_URL
@@ -23,6 +25,23 @@ function createClient() {
   })
 }
 
-export const prisma = globalForPrisma.prisma ?? createClient()
+function getClient(): PrismaClient {
+  client ??= globalForPrisma.prisma ?? createClient()
+  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client
+  return client
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+// `next build` evaluates route modules to collect their config, which would
+// construct the client — and throw on a missing DATABASE_URL — before any query
+// runs. Deferring construction to the first property access keeps the
+// connection string a request-time requirement rather than a build-time one.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const instance = getClient()
+    const value = Reflect.get(instance, prop) as unknown
+    return typeof value === "function" ? value.bind(instance) : value
+  },
+  has(_target, prop) {
+    return Reflect.has(getClient(), prop)
+  },
+})
