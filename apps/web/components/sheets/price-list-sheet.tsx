@@ -95,14 +95,13 @@ export function PriceListSheet({
                     {item.name}
                   </td>
                   <td
-                    dir="ltr"
                     style={{
                       padding: "5px 8px",
                       textAlign: "end",
                       borderBottom: "1px solid #e5e7eb",
                     }}
                   >
-                    {formatAmount(item.price)}
+                    <span dir="ltr">{formatAmount(item.price)}</span>
                   </td>
                 </tr>
               ))}

@@ -209,8 +209,16 @@ model PriceList {
   title              String
   date               String
   basketCount        Int? // تعداد باسکت
-  commission         Decimal? @db.Decimal(12, 2) // حق
+  commission         Decimal? @db.Decimal(12, 2) // حق, as entered
   commissionIsPercent Boolean @default(false)
+
+  // حق resolved to currency: a percentage already applied to the subtotal and
+  // snapped, so it matches the figure printed on the sheet exactly. Stored
+  // rather than derived because the earnings panel sums it across a date range,
+  // which would otherwise mean loading every line item of every sheet.
+  // Written on save by savePriceList(); never edited directly.
+  commissionAmount Decimal @default(0) @db.Decimal(12, 2)
+
   notes              String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -221,6 +229,9 @@ model PriceList {
 
   @@unique([userId, number])
   @@index([userId, createdAt])
+  // The earnings panel filters and groups on `date` — the business date on the
+  // sheet, not createdAt, which is when it happened to be typed in.
+  @@index([userId, date])
 }
 
 model PriceListItem {
@@ -257,8 +268,15 @@ model ManReceipt {
   title              String
   date               String
   basketCount        Int?
-  commission         Decimal? @db.Decimal(12, 2)
+  commission         Decimal? @db.Decimal(12, 2) // حق, as entered
   commissionIsPercent Boolean @default(false)
+
+  // حق resolved to currency, exactly as on PriceList — the earnings panel sums
+  // it across a date range, and deriving it here would mean loading every line
+  // item of every sheet and re-deriving each per-من line amount.
+  // Written on save by saveManReceipt(); never edited directly.
+  commissionAmount Decimal @default(0) @db.Decimal(12, 2)
+
   notes              String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -269,6 +287,8 @@ model ManReceipt {
 
   @@unique([userId, number])
   @@index([userId, createdAt])
+  // Filtered and grouped on the business date, not createdAt.
+  @@index([userId, date])
 }
 
 model ManReceiptItem {

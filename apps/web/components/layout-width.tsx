@@ -12,8 +12,8 @@ import { cn } from "@workspace/ui/lib/utils"
 import { fa } from "@/lib/fa"
 
 // Wide screens stretch a receipt's rows across the whole monitor, which makes
-// the table hard to read. The toggle lets the user cap the content width and
-// come back to full width; the choice is remembered in a cookie so the server
+// the table hard to read — so the content is capped by default and the toggle
+// releases it to full width. The choice is remembered in a cookie so the server
 // renders the right one and the page never flashes at the wrong width.
 export const LAYOUT_WIDTH_COOKIE = "layout_width"
 const LAYOUT_WIDTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
@@ -37,7 +37,7 @@ function useLayoutWidth() {
 }
 
 export function LayoutWidthProvider({
-  defaultWidth = "wide",
+  defaultWidth = "narrow",
   children,
 }: {
   defaultWidth?: LayoutWidth

@@ -103,6 +103,42 @@ export const fa = {
     itemsCount: "تعداد اقلام",
   },
 
+  // The حق earned on a sheet type, summed over a window. Shown on the sheet
+  // list rather than on a page of its own — it is read while looking at the
+  // sheets. فیش مزاد and فیش من each get their own panel, on their own list.
+  earnings: {
+    title: "درآمد حق",
+    descriptionPriceLists: "مجموع حق ثبت‌شده روی فیش‌های مزاد",
+    descriptionManReceipts: "مجموع حق ثبت‌شده روی فیش‌های من",
+    total: "مجموع حق",
+    sheets: "تعداد فیش",
+    average: "میانگین هر فیش",
+    best: "بیشترین",
+    vsPrevious: "نسبت به دوره قبل",
+    noPrevious: "دوره قبلی برای مقایسه نیست",
+    empty: "در این بازه فیشی ثبت نشده",
+    rangeToday: "امروز",
+    rangeWeek: "این هفته",
+    rangeMonth: "این ماه",
+    rangeQuarter: "۳ ماه",
+    rangeAll: "همه",
+    rangeCustom: "بازه دلخواه",
+    rangeLabel: "بازه زمانی",
+    pickRange: "انتخاب بازه",
+    apply: "اعمال",
+    clearRange: "حذف بازه",
+    showDetails: "مشاهده جزئیات",
+    hideDetails: "بستن جزئیات",
+    breakdown: "جزئیات حق",
+    who: "شرح / مشتری",
+    rowsTruncated: "نمایش {shown} مورد از {total}",
+    daily: "روزانه",
+    weekly: "هفتگی",
+    monthly: "ماهانه",
+    oldest: "قدیمی‌ترین",
+    newest: "جدیدترین",
+  },
+
   editor: {
     title: "عنوان",
     titlePlaceholder: "نام مشتری یا شرح",

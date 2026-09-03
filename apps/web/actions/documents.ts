@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { prisma, type CatalogKind, type Prisma } from "@workspace/db"
 
+import { deductionTotals, manLineAmount } from "@/lib/calc"
 import { catalogKey, normalizeName } from "@/lib/catalog-key"
 import { nextNumber } from "@/lib/counter"
 import { requireUser } from "@/lib/dal"
@@ -192,12 +193,23 @@ export async function savePriceList(
     .filter((e) => hasContent(e.label) || e.amount)
     .map((e, position) => ({ position, label: normalizeName(e.label), amount: e.amount }))
 
+  // The stored حق must equal what the sheet prints, so it is resolved through
+  // the same calculation the sheet uses, over the same filtered items — a
+  // percentage of a subtotal that counted blank rows would not match.
+  const { commission: commissionAmount } = deductionTotals({
+    lineAmounts: items.map((i) => i.price),
+    commission: data.commission,
+    commissionIsPercent: data.commissionIsPercent,
+    expenses,
+  })
+
   const header = {
     title: data.title,
     date: data.date,
     basketCount: data.basketCount ?? null,
     commission: data.commission ?? null,
     commissionIsPercent: data.commissionIsPercent,
+    commissionAmount,
     notes: data.notes ?? null,
   }
 
@@ -260,12 +272,23 @@ export async function saveManReceipt(
     .filter((e) => hasContent(e.label) || e.amount)
     .map((e, position) => ({ position, label: normalizeName(e.label), amount: e.amount }))
 
+  // Same contract as savePriceList: the stored حق is resolved through the
+  // sheet's own calculation, so it equals the figure printed on it. The line
+  // amounts are derived from weight and the per-من rate first.
+  const { commission: commissionAmount } = deductionTotals({
+    lineAmounts: items.map(manLineAmount),
+    commission: data.commission,
+    commissionIsPercent: data.commissionIsPercent,
+    expenses,
+  })
+
   const header = {
     title: data.title,
     date: data.date,
     basketCount: data.basketCount ?? null,
     commission: data.commission ?? null,
     commissionIsPercent: data.commissionIsPercent,
+    commissionAmount,
     notes: data.notes ?? null,
   }
 

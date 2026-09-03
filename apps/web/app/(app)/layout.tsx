@@ -25,8 +25,10 @@ export default async function AppLayout({
     cookies(),
   ])
 
+  // Narrow unless the user has explicitly asked for full width: capped content
+  // is the readable default, and only an opted-in cookie widens it.
   const layoutWidth =
-    cookieStore.get(LAYOUT_WIDTH_COOKIE)?.value === "narrow" ? "narrow" : "wide"
+    cookieStore.get(LAYOUT_WIDTH_COOKIE)?.value === "wide" ? "wide" : "narrow"
 
   return (
     <LayoutWidthProvider defaultWidth={layoutWidth}>

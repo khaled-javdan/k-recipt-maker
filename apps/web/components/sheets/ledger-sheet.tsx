@@ -106,14 +106,13 @@ export function LedgerSheet({
               {fa.common.total}
             </td>
             <td
-              dir="ltr"
               style={{
                 padding: "8px 10px",
                 textAlign: "end",
                 borderTop: `2px solid ${accent}`,
               }}
             >
-              {formatAmount(grandTotal)}
+              <span dir="ltr">{formatAmount(grandTotal)}</span>
             </td>
             {trailingSpan > 0 ? (
               <td colSpan={trailingSpan} style={{ borderTop: `2px solid ${accent}` }} />

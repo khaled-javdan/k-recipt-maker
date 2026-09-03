@@ -1,9 +1,10 @@
 import "server-only"
 
 import { notFound } from "next/navigation"
-import { prisma } from "@workspace/db"
+import { prisma, type Prisma } from "@workspace/db"
 import { toNumber, toOptionalNumber } from "@workspace/db/mappers"
 
+import { addDays, daysBetween, type DateRange, type DayTotal } from "./analytics"
 import { requireUser } from "./dal"
 import {
   DEFAULT_LEDGER_COLUMNS,
@@ -233,6 +234,207 @@ function mapPriceList(p: PriceListRow): PriceList {
       label: e.label,
       amount: toNumber(e.amount),
     })),
+  }
+}
+
+// ─── حق earnings ───────────────────────────────────────────────────────────
+// حق is summed straight out of the stored commissionAmount, the figure written
+// at save time. That is the whole reason the column exists: the alternative is
+// loading every line item of every sheet in the range just to re-derive a
+// percentage the sheet already printed.
+//
+// فیش مزاد and فیش من are separate tables carrying the same earnings columns,
+// so the shaping is written once and `kind` only picks the table. Each query
+// branches at the delegate — the two Prisma delegates are unrelated types —
+// and everything past that point is a plain row shape.
+
+/** Which sheet type the earnings are read from. Same kinds as the catalog. */
+export type EarningsKind = "PRICE" | "MAN"
+
+export type SheetEarnings = {
+  total: number
+  sheetCount: number
+  /** Per sheet, not per day — a day with three sheets should not read as one. */
+  average: number
+  byDay: DayTotal[]
+  /** Same-length window immediately before the range, or null for "all time". */
+  previousTotal: number | null
+}
+
+export async function getSheetEarnings(
+  kind: EarningsKind,
+  range: DateRange
+): Promise<SheetEarnings> {
+  const user = await requireUser()
+  const where = rangeWhere(user.id, range)
+
+  const [totals, byDay, previousTotal] = await Promise.all([
+    sumCommission(kind, where),
+    commissionByDay(kind, where),
+    previousWindowTotal(kind, user.id, range),
+  ])
+
+  return {
+    total: totals.total,
+    sheetCount: totals.sheetCount,
+    average: totals.sheetCount > 0 ? totals.total / totals.sheetCount : 0,
+    byDay,
+    previousTotal,
+  }
+}
+
+// One row per sheet behind the total: who it was for, when, and how much حق it
+// carried. This answers "where did that number come from", so it is deliberately
+// per-sheet rather than grouped — a client who appears three times in a month
+// should read as three sheets on three dates, not one lump.
+export type EarningRow = {
+  id: string
+  number: number
+  title: string
+  date: string
+  commission: number
+}
+
+/** Newest first, and capped: a wide window can hold more rows than anyone reads. */
+export const EARNINGS_ROW_LIMIT = 200
+
+export async function listEarningRows(
+  kind: EarningsKind,
+  range: DateRange
+): Promise<EarningRow[]> {
+  const user = await requireUser()
+
+  const where = rangeWhere(user.id, range)
+  const select = {
+    id: true,
+    number: true,
+    title: true,
+    date: true,
+    commissionAmount: true,
+  }
+  const orderBy = [{ date: "desc" as const }, { number: "desc" as const }]
+
+  return kind === "MAN"
+    ? (
+        await prisma.manReceipt.findMany({
+          where,
+          select,
+          orderBy,
+          take: EARNINGS_ROW_LIMIT,
+        })
+      ).map(toEarningRow)
+    : (
+        await prisma.priceList.findMany({
+          where,
+          select,
+          orderBy,
+          take: EARNINGS_ROW_LIMIT,
+        })
+      ).map(toEarningRow)
+}
+
+// `date` is an ISO yyyy-mm-dd string, so a string comparison is a date
+// comparison — that is exactly why the column is stored zero-padded.
+function rangeWhere(userId: string, range: DateRange) {
+  return {
+    userId,
+    date: { ...(range.from ? { gte: range.from } : {}), lte: range.to },
+  }
+}
+
+type CommissionWhere = ReturnType<typeof rangeWhere>
+
+// Prisma derives each result shape from the literal it is handed, so the two
+// branches of these three queries spell their arguments out rather than sharing
+// one args object — which would widen the shape and lose `_sum.commissionAmount`.
+async function sumCommission(
+  kind: EarningsKind,
+  where: CommissionWhere
+): Promise<{ total: number; sheetCount: number }> {
+  const result =
+    kind === "MAN"
+      ? await prisma.manReceipt.aggregate({
+          where,
+          _sum: { commissionAmount: true },
+          _count: true,
+        })
+      : await prisma.priceList.aggregate({
+          where,
+          _sum: { commissionAmount: true },
+          _count: true,
+        })
+
+  return { total: toNumber(result._sum.commissionAmount), sheetCount: result._count }
+}
+
+async function commissionByDay(
+  kind: EarningsKind,
+  where: CommissionWhere
+): Promise<DayTotal[]> {
+  return kind === "MAN"
+    ? (
+        await prisma.manReceipt.groupBy({
+          by: ["date"],
+          where,
+          _sum: { commissionAmount: true },
+          _count: true,
+          orderBy: { date: "asc" },
+        })
+      ).map(toDayTotal)
+    : (
+        await prisma.priceList.groupBy({
+          by: ["date"],
+          where,
+          _sum: { commissionAmount: true },
+          _count: true,
+          orderBy: { date: "asc" },
+        })
+      ).map(toDayTotal)
+}
+
+// "Last 30 days" is only meaningful next to the 30 before it. All-time has no
+// preceding window, so it gets no comparison rather than a misleading zero.
+async function previousWindowTotal(
+  kind: EarningsKind,
+  userId: string,
+  range: DateRange
+): Promise<number | null> {
+  if (!range.from) return null
+
+  const length = daysBetween(range.from, range.to) + 1
+  const priorEnd = addDays(range.from, -1)
+  const priorStart = addDays(priorEnd, -(length - 1))
+
+  const { total } = await sumCommission(kind, {
+    userId,
+    date: { gte: priorStart, lte: priorEnd },
+  })
+  return total
+}
+
+type CommissionSum = { commissionAmount: Prisma.Decimal | null }
+
+function toDayTotal(row: { date: string; _sum: CommissionSum; _count: number }): DayTotal {
+  return {
+    date: row.date,
+    amount: toNumber(row._sum.commissionAmount),
+    sheets: row._count,
+  }
+}
+
+function toEarningRow(row: {
+  id: string
+  number: number
+  title: string
+  date: string
+  commissionAmount: Prisma.Decimal
+}): EarningRow {
+  return {
+    id: row.id,
+    number: row.number,
+    title: row.title,
+    date: row.date,
+    commission: toNumber(row.commissionAmount),
   }
 }
 

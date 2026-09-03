@@ -25,8 +25,6 @@ import {
   formatTotalWeight,
   manLineAmount,
   parseNumber,
-  pricePerKg,
-  pricePerManFromKg,
   snapPriceInput,
 } from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
@@ -60,8 +58,8 @@ type DraftItem = {
   price: string
   /** فیش من: kilos bought. */
   weight: string
-  /** فیش من: rate typed per kilo, stored and printed per من. */
-  ratePerKg: string
+  /** فیش من: the rate per من, typed and stored as-is. */
+  ratePerMan: string
 }
 
 type DraftExpense = { key: string; label: string; amount: string }
@@ -73,7 +71,7 @@ const emptyItem = (): DraftItem => ({
   name: "",
   price: "",
   weight: "",
-  ratePerKg: "",
+  ratePerMan: "",
 })
 
 const emptyExpense = (): DraftExpense => ({ key: newKey(), label: "", amount: "" })
@@ -124,8 +122,7 @@ export function DeductionEditor({
         name: i.name,
         price: "",
         weight: String(i.weight),
-        // Rates are stored per من but typed per kilo.
-        ratePerKg: String(pricePerKg(i.pricePerMan)),
+        ratePerMan: String(i.pricePerMan),
       }))
     }
     const doc = document as PriceList
@@ -135,7 +132,7 @@ export function DeductionEditor({
       name: i.name,
       price: String(i.price),
       weight: "",
-      ratePerKg: "",
+      ratePerMan: "",
     }))
   })
 
@@ -160,7 +157,7 @@ export function DeductionEditor({
     isMan
       ? manLineAmount({
           weight: parseNumber(i.weight),
-          pricePerMan: pricePerManFromKg(parseNumber(i.ratePerKg)),
+          pricePerMan: parseNumber(i.ratePerMan),
         })
       : parseNumber(i.price)
   )
@@ -198,7 +195,7 @@ export function DeductionEditor({
           ? {
               name: i.name,
               weight: parseNumber(i.weight),
-              pricePerMan: pricePerManFromKg(parseNumber(i.ratePerKg)),
+              pricePerMan: parseNumber(i.ratePerMan),
             }
           : { name: i.name, price: parseNumber(i.price) }
       ),
@@ -306,7 +303,7 @@ export function DeductionEditor({
                       null,
                       fa.sheets.item,
                       fa.sheets.weightKg,
-                      fa.sheets.pricePerKg,
+                      fa.sheets.pricePerMan,
                       { label: fa.sheets.amount, align: "end" as const },
                       null,
                     ]
@@ -335,10 +332,10 @@ export function DeductionEditor({
                   onPick={(picked) =>
                     updateItem(index, {
                       name: picked.name,
-                      // The من catalog remembers a per-من rate; the field is
-                      // per kilo, so convert on the way in.
+                      // The من catalog remembers a per-من rate, which is what
+                      // the field takes — nothing to convert.
                       ...(isMan
-                        ? { ratePerKg: String(pricePerKg(picked.price)) }
+                        ? { ratePerMan: String(picked.price) }
                         : { price: String(picked.price) }),
                     })
                   }
@@ -353,9 +350,9 @@ export function DeductionEditor({
                       onValueChange={(v) => updateItem(index, { weight: v })}
                     />
                     <NumberInput
-                      value={item.ratePerKg}
-                      aria-label={fa.sheets.pricePerKg}
-                      onValueChange={(v) => updateItem(index, { ratePerKg: v })}
+                      value={item.ratePerMan}
+                      aria-label={fa.sheets.pricePerMan}
+                      onValueChange={(v) => updateItem(index, { ratePerMan: v })}
                     />
                   </>
                 ) : (

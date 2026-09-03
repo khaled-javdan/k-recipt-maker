@@ -115,27 +115,25 @@ export function ReceiptSheet({
             {cols.sign ? <td style={{ borderTop: `2px solid ${accent}` }} /> : null}
             {cols.count ? (
               <td
-                dir="ltr"
                 style={{
                   padding: "8px 10px",
                   textAlign: "end",
                   borderTop: `2px solid ${accent}`,
                 }}
               >
-                {totalCount}
+                <span dir="ltr">{totalCount}</span>
               </td>
             ) : null}
             {cols.unitWeight ? <td style={{ borderTop: `2px solid ${accent}` }} /> : null}
             {cols.totalWeight ? (
               <td
-                dir="ltr"
                 style={{
                   padding: "8px 10px",
                   textAlign: "end",
                   borderTop: `2px solid ${accent}`,
                 }}
               >
-                {formatTotalWeight(totalWeight)}
+                <span dir="ltr">{formatTotalWeight(totalWeight)}</span>
               </td>
             ) : null}
           </tr>
