@@ -10,6 +10,7 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
+    "db:import": "tsx --env-file=.env.local scripts/import-backup.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -42,6 +43,7 @@
     "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^3.2.7"
   }

@@ -46,6 +46,9 @@ export function ImportPanel() {
       }
       setSummary(result.summary ?? null)
       toast.success(fa.import.done)
+      // The documents landed; the logo is the one part the user can redo by
+      // hand, so it is a warning beside the summary rather than a failure.
+      if (result.warning) toast.warning(result.warning)
       router.refresh()
     } catch {
       toast.error(fa.import.invalidFile)
