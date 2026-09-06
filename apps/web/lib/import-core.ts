@@ -135,9 +135,12 @@ export async function runImport(
     if (client.id) clientIdMap.set(client.id, created.id)
   }
 
-  for (const product of data.products ?? []) {
-    await tx.product.create({
-      data: {
+  // Inserted in one statement rather than one per row: a real backup carries
+  // hundreds of these, and a round trip each is what pushes the transaction
+  // past its timeout.
+  if (data.products?.length) {
+    await tx.product.createMany({
+      data: data.products.map((product) => ({
         userId,
         name: product.name,
         colorName: product.colorName ?? "",
@@ -145,7 +148,7 @@ export async function runImport(
           ? product.colorHex!
           : "#9ca3af",
         unitWeight: product.unitWeight,
-      },
+      })),
     })
   }
 
@@ -277,7 +280,13 @@ export async function runImport(
 
   // Two catalogs, one table. De-duplicated on the way in because the old
   // storage had no unique index and could hold the same name twice.
-  let catalogStored = 0
+  const catalogRows: {
+    userId: string
+    kind: "PRICE" | "MAN"
+    nameKey: string
+    name: string
+    price: number
+  }[] = []
   for (const [kind, entries] of [
     ["PRICE", data.priceCatalog ?? []],
     ["MAN", data.manCatalog ?? []],
@@ -286,15 +295,17 @@ export async function runImport(
     for (const entry of entries) {
       const name = normalizeName(entry.name)
       if (!name) continue
+      // Later rows win, so a name carried by two devices keeps the price from
+      // whichever backup was appended last.
       seen.set(catalogKey(name), { name, price: entry.price })
     }
-    for (const [key, value] of seen) {
-      await tx.catalogItem.create({
-        data: { userId, kind, nameKey: key, name: value.name, price: value.price },
-      })
-      catalogStored++
+    for (const [nameKey, value] of seen) {
+      catalogRows.push({ userId, kind, nameKey, name: value.name, price: value.price })
     }
   }
+  // One statement for what can be a thousand rows.
+  if (catalogRows.length) await tx.catalogItem.createMany({ data: catalogRows })
+  const catalogStored = catalogRows.length
 
   // Numbering continues from the old app's own counter, not just the highest
   // surviving document: a user who deleted their most recent sheets would

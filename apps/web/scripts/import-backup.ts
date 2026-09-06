@@ -121,7 +121,9 @@ try {
       if (dryRun) throw new DryRun(result)
       return result
     },
-    { timeout: 120_000, maxWait: 15_000 }
+    // The CLI has no platform timeout to respect, unlike the server action, so
+    // it can afford headroom for a backup merged from several devices.
+    { timeout: 600_000, maxWait: 30_000 }
   )
 } catch (error) {
   if (error instanceof DryRun) {

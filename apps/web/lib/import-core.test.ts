@@ -25,6 +25,10 @@ function recorder() {
       ;(created[name] ??= []).push(args.data)
       return { id: `${name}-${created[name]!.length}` }
     },
+    createMany: async (args: { data: Created[] }) => {
+      ;(created[name] ??= []).push(...args.data)
+      return { count: args.data.length }
+    },
     upsert: async (args: { create: Created; update: Created; where: Created }) => {
       ;(upserted[name] ??= []).push({ ...args.create, where: args.where })
       return { id: `${name}-upsert` }
