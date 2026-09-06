@@ -9,22 +9,27 @@ import { backupSchema } from "@/lib/import-schema"
 // Loads a backup file exported from the old localStorage app into one user's
 // account.
 //
-//   pnpm db:import <file.json> --user <username> [--dry-run]
+//   pnpm db:import <file.json> --user <username> [--dry-run] [--skip-logo]
+//
+// --skip-logo leaves Settings.logoUrl exactly as it is, for when the logo has
+// already been uploaded by hand and re-uploading it would only orphan a blob.
 //
 // This is the path a real migration takes rather than the admin import screen:
 // the file arrives from someone else's device, and a backup carrying a base64
 // logo can exceed the server action body limit on its own.
 
-type Args = { file: string; username: string; dryRun: boolean }
+type Args = { file: string; username: string; dryRun: boolean; skipLogo: boolean }
 
 function parseArgs(argv: string[]): Args {
   const positional: string[] = []
   let username = ""
   let dryRun = false
+  let skipLogo = false
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!
     if (arg === "--dry-run") dryRun = true
+    else if (arg === "--skip-logo") skipLogo = true
     else if (arg === "--user") username = argv[++i] ?? ""
     else if (arg.startsWith("--user=")) username = arg.slice("--user=".length)
     else positional.push(arg)
@@ -32,10 +37,12 @@ function parseArgs(argv: string[]): Args {
 
   const file = positional[0] ?? ""
   if (!file || !username) {
-    console.error("Usage: pnpm db:import <file.json> --user <username> [--dry-run]")
+    console.error(
+      "Usage: pnpm db:import <file.json> --user <username> [--dry-run] [--skip-logo]"
+    )
     process.exit(1)
   }
-  return { file, username, dryRun }
+  return { file, username, dryRun, skipLogo }
 }
 
 // Thrown to unwind the transaction on a dry run. Rolling back real inserts is
@@ -47,7 +54,7 @@ class DryRun extends Error {
   }
 }
 
-const { file, username, dryRun } = parseArgs(process.argv.slice(2))
+const { file, username, dryRun, skipLogo } = parseArgs(process.argv.slice(2))
 
 const raw = await readFile(file, "utf8").catch((error: NodeJS.ErrnoException) => {
   console.error(`Could not read ${file}: ${error.message}`)
@@ -97,7 +104,10 @@ console.log(`Exported ${parsed.data.exportedAt ?? "unknown"}`)
 console.log(`Target   ${user.displayName} (${user.username})`)
 console.log(dryRun ? "Mode     dry run — rolled back\n" : "Mode     WRITE — replaces this user's data\n")
 
-const logo = await importLogo(user.id, data.company?.logo)
+const logo = skipLogo
+  ? ({ status: "absent" } as const)
+  : await importLogo(user.id, data.company?.logo)
+if (skipLogo) console.log("Logo     left as-is (--skip-logo)")
 if (logo.status === "skipped") console.warn(`Logo not migrated: ${logo.reason}`)
 if (logo.status === "uploaded") console.log(`Logo uploaded: ${logo.url}`)
 
