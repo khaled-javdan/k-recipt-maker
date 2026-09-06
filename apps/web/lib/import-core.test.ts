@@ -215,6 +215,38 @@ describe("runImport — dates", () => {
   })
 })
 
+describe("runImport — absent optional fields", () => {
+  // z.coerce.string() turns an absent key into the literal "undefined", which
+  // once stored 153 notes reading "undefined" on real sheets.
+  it("leaves a missing note null rather than the string \"undefined\"", async () => {
+    const { tx, created } = recorder()
+    await runImport(tx, "u1", parse({
+      receipts: [{ number: 1001, date: "2026-09-01", items: [] }],
+      ledgers: [{ number: 1001, title: "a", date: "2026-09-01", rows: [] }],
+      priceLists: [{ number: 1001, title: "a", date: "2026-09-01", items: [] }],
+      manReceipts: [{ number: 1001, title: "a", date: "2026-09-01", items: [] }],
+    }))
+
+    for (const model of ["receipt", "ledger", "priceList", "manReceipt"]) {
+      expect(created[model]?.[0]).toMatchObject({ notes: null })
+    }
+  })
+
+  it("leaves a missing phone and address null on a client", async () => {
+    const { tx, created } = recorder()
+    await runImport(tx, "u1", parse({ clients: [{ name: "شوکت" }] }))
+    expect(created.client?.[0]).toMatchObject({ phone: null, address: null })
+  })
+
+  it("keeps a real note", async () => {
+    const { tx, created } = recorder()
+    await runImport(tx, "u1", parse({
+      priceLists: [{ number: 1001, title: "a", date: "2026-09-01", notes: "برف", items: [] }],
+    }))
+    expect(created.priceList?.[0]).toMatchObject({ notes: "برف" })
+  })
+})
+
 describe("findNumberCollisions", () => {
   it("names duplicated document numbers before anything is written", () => {
     const problems = findNumberCollisions(parse({

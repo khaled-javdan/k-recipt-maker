@@ -6,19 +6,28 @@ import { z } from "zod"
 
 const num = z.coerce.number().catch(0)
 const str = z.coerce.string().catch("")
+
+// z.coerce.string() applies String() to its input before .optional() is
+// consulted, so a key the old app simply never wrote arrives as the literal
+// "undefined" — which then stores as a real note or a real phone number.
+// Optional strings have to guard the coercion rather than rely on .optional().
+const optionalStr = z
+  .unknown()
+  .optional()
+  .transform((v) => (v == null ? null : String(v)))
 const isoDate = z
   .string()
   .catch("")
   .transform((v) => (/^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : ""))
 
 const legacyExpense = z.object({
-  id: str.optional(),
+  id: optionalStr,
   label: str,
   amount: num,
 })
 
 const deductionDoc = z.object({
-  id: str.optional(),
+  id: optionalStr,
   number: num,
   title: str,
   date: isoDate,
@@ -28,7 +37,7 @@ const deductionDoc = z.object({
   // Superseded by expenseItems; folded into a single line on import.
   expenses: num.optional().nullable(),
   expenseItems: z.array(legacyExpense).catch([]).optional(),
-  notes: str.optional().nullable(),
+  notes: optionalStr,
   createdAt: num.optional(),
 })
 
@@ -39,10 +48,10 @@ export const backupSchema = z.object({
   data: z.object({
     company: z
       .object({
-        name: str.optional(),
-        logo: str.optional().nullable(),
-        primaryColor: str.optional(),
-        accentColor: str.optional(),
+        name: optionalStr,
+        logo: optionalStr,
+        primaryColor: optionalStr,
+        accentColor: optionalStr,
         receiptColumns: z.record(z.string(), z.boolean()).optional().nullable(),
         ledgerColumns: z.record(z.string(), z.boolean()).optional().nullable(),
         priceListConfig: z
@@ -57,10 +66,10 @@ export const backupSchema = z.object({
     clients: z
       .array(
         z.object({
-          id: str.optional(),
+          id: optionalStr,
           name: str,
-          phone: str.optional().nullable(),
-          address: str.optional().nullable(),
+          phone: optionalStr,
+          address: optionalStr,
         })
       )
       .catch([])
@@ -69,10 +78,10 @@ export const backupSchema = z.object({
     products: z
       .array(
         z.object({
-          id: str.optional(),
+          id: optionalStr,
           name: str,
-          colorName: str.optional(),
-          colorHex: str.optional(),
+          colorName: optionalStr,
+          colorHex: optionalStr,
           unitWeight: num,
         })
       )
@@ -82,21 +91,21 @@ export const backupSchema = z.object({
     receipts: z
       .array(
         z.object({
-          id: str.optional(),
+          id: optionalStr,
           number: num,
-          clientId: str.optional().nullable(),
-          clientName: str.optional().nullable(),
+          clientId: optionalStr,
+          clientName: optionalStr,
           date: isoDate,
-          notes: str.optional().nullable(),
+          notes: optionalStr,
           createdAt: num.optional(),
           items: z
             .array(
               z.object({
-                id: str.optional(),
-                productId: str.optional().nullable(),
+                id: optionalStr,
+                productId: optionalStr,
                 productName: str,
-                colorName: str.optional(),
-                colorHex: str.optional(),
+                colorName: optionalStr,
+                colorHex: optionalStr,
                 unitWeight: num,
                 quantity: num,
                 weight: num,
@@ -111,18 +120,18 @@ export const backupSchema = z.object({
     ledgers: z
       .array(
         z.object({
-          id: str.optional(),
+          id: optionalStr,
           number: num,
           title: str,
           date: isoDate,
-          notes: str.optional().nullable(),
+          notes: optionalStr,
           createdAt: num.optional(),
           rows: z
             .array(
               z.object({
-                id: str.optional(),
+                id: optionalStr,
                 name: str,
-                date: str.optional().nullable(),
+                date: optionalStr,
                 invoice: num,
                 commission: num,
                 cash: num,
