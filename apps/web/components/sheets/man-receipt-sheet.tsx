@@ -6,13 +6,20 @@ import {
   formatUnitWeight,
   manLineAmount,
   manReceiptTotals,
-  pricePerKg,
 } from "@/lib/calc"
 import { fa } from "@/lib/fa"
 import type { ManReceipt, Settings } from "@/lib/types"
 
-import { DeductionTotals, ExpenseBox } from "./deduction-sheet"
-import { SheetFrame, SheetHeader, SheetNotes, SheetTable, type SheetColumn } from "./sheet"
+import { DeductionFooter, TotalLine, commissionLabel } from "./deduction-sheet"
+import {
+  SheetFrame,
+  SheetHeader,
+  SheetNotes,
+  SheetTable,
+  footerCell,
+  formatSheetDate,
+  type SheetColumn,
+} from "./sheet"
 
 // فیش من — the same deductions as the auction sheet, but each line is priced
 // by weight against a per-من rate. The line amount is derived, never stored.
@@ -25,7 +32,7 @@ export function ManReceiptSheet({
   manReceipt: ManReceipt
   settings: Settings
 }) {
-  const accent = settings.primaryColor
+  const { primaryColor, accentColor } = settings
 
   const totals = manReceiptTotals({
     items: manReceipt.items,
@@ -36,75 +43,106 @@ export function ManReceiptSheet({
 
   type Row = ManReceipt["items"][number]
   const columns: SheetColumn<Row>[] = [
-    { key: "name", label: fa.sheets.item, render: (i) => i.name },
+    { key: "name", label: fa.sheets.item, strong: true, render: (i) => i.name },
     {
       key: "weight",
       label: fa.sheets.weightKg,
-      align: "end",
-      width: 110,
-      render: (i) => <span dir="ltr">{formatUnitWeight(i.weight)}</span>,
+      numeric: true,
+      render: (i) => formatUnitWeight(i.weight),
     },
     {
       key: "rate",
       label: fa.sheets.pricePerMan,
-      align: "end",
-      width: 110,
-      render: (i) => <span dir="ltr">{formatAmount(i.pricePerMan)}</span>,
-    },
-    {
-      key: "perKg",
-      label: fa.sheets.pricePerKg,
-      align: "end",
-      width: 100,
-      render: (i) => <span dir="ltr">{formatAmount(pricePerKg(i.pricePerMan))}</span>,
+      numeric: true,
+      render: (i) => formatAmount(i.pricePerMan),
     },
     {
       key: "amount",
       label: fa.sheets.amount,
-      align: "end",
-      width: 110,
-      render: (i) => <span dir="ltr">{formatAmount(manLineAmount(i))}</span>,
+      numeric: true,
+      cellStyle: { fontWeight: 600 },
+      render: (i) => formatAmount(manLineAmount(i)),
     },
   ]
 
+  const cellPadding = "10px 14px"
+  const footerPadding = "12px 14px"
+
   return (
-    <SheetFrame ref={ref} accentColor={accent}>
+    <SheetFrame ref={ref} primaryColor={primaryColor}>
       <SheetHeader
         companyName={settings.companyName}
         logoUrl={settings.logoUrl}
-        title={manReceipt.title || fa.sheets.manReceiptTitle}
-        number={manReceipt.number}
-        date={manReceipt.date}
-        subtitle={
+        icon="manReceipt"
+        primaryColor={primaryColor}
+        accentColor={accentColor}
+        label={fa.sheets.listTitleLabel}
+        value={manReceipt.title || `#${manReceipt.number}`}
+        date={formatSheetDate(manReceipt.date)}
+        subline={
           manReceipt.basketCount
-            ? `${fa.sheets.basketCount}: ${manReceipt.basketCount}`
+            ? `${fa.sheets.basketCount} : ${manReceipt.basketCount}`
             : null
         }
       />
 
-      <SheetTable columns={columns} rows={manReceipt.items} accentColor={accent} />
+      <SheetTable
+        columns={columns}
+        rows={manReceipt.items}
+        primaryColor={primaryColor}
+        fontSize="13px"
+        cellPadding={cellPadding}
+        tightNumerics
+        rowKey={(i) => i.id}
+        footer={
+          <tr>
+            <td style={footerCell({ fontWeight: 600, padding: footerPadding })}>
+              {fa.common.total}
+            </td>
+            <td
+              style={footerCell({
+                numeric: true,
+                nowrap: true,
+                fontWeight: 700,
+                accentColor,
+                padding: footerPadding,
+              })}
+            >
+              {formatTotalWeight(totals.totalWeight)}
+            </td>
+            <td style={footerCell({ padding: footerPadding })} />
+            <td
+              style={footerCell({
+                numeric: true,
+                nowrap: true,
+                fontWeight: 700,
+                accentColor,
+                padding: footerPadding,
+              })}
+            >
+              {formatAmount(totals.subtotal)}
+            </td>
+          </tr>
+        }
+      />
 
-      <ExpenseBox expenses={manReceipt.expenses} accentColor={accent} />
-
-      <DeductionTotals
+      <DeductionFooter
+        expenses={manReceipt.expenses}
+        expensesTotal={totals.expenses}
         subtotal={totals.subtotal}
         commission={totals.commission}
-        expenses={totals.expenses}
+        commissionLabel={commissionLabel(
+          manReceipt.commission,
+          manReceipt.commissionIsPercent
+        )}
         grandTotal={totals.grandTotal}
-        accentColor={accent}
-        extra={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 24,
-              padding: "5px 10px",
-              fontSize: 13,
-            }}
-          >
-            <span>{fa.sheets.totalWeight}</span>
-            <span dir="ltr">{formatTotalWeight(totals.totalWeight)}</span>
-          </div>
+        primaryColor={primaryColor}
+        accentColor={accentColor}
+        leadingTotal={
+          <TotalLine
+            label={fa.sheets.totalWeight}
+            value={formatTotalWeight(totals.totalWeight)}
+          />
         }
       />
 

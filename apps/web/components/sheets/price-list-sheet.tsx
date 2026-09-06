@@ -4,12 +4,13 @@ import { deductionTotals, formatAmount, layoutColumns } from "@/lib/calc"
 import { fa } from "@/lib/fa"
 import type { PriceList, Settings } from "@/lib/types"
 
-import { DeductionTotals, ExpenseBox } from "./deduction-sheet"
-import { SheetFrame, SheetHeader, SheetNotes } from "./sheet"
+import { DeductionFooter, commissionLabel } from "./deduction-sheet"
+import { SheetFrame, SheetHeader, SheetNotes, formatSheetDate } from "./sheet"
 
 // فیش مزاد — the auction sheet. Items flow column-major so the printed page
 // reads like the hand-written original: fill the first column top to bottom,
-// then start the next.
+// then start the next. Each column is its own bordered table sitting in a grid,
+// which is what keeps the columns aligned when they hold uneven counts.
 export function PriceListSheet({
   ref,
   priceList,
@@ -19,7 +20,7 @@ export function PriceListSheet({
   priceList: PriceList
   settings: Settings
 }) {
-  const accent = settings.primaryColor
+  const { primaryColor, accentColor } = settings
   const { itemsPerColumn, maxColumns } = settings.priceListConfig
 
   const totals = deductionTotals({
@@ -32,92 +33,95 @@ export function PriceListSheet({
   const columns = layoutColumns(priceList.items, itemsPerColumn, maxColumns)
 
   return (
-    <SheetFrame ref={ref} accentColor={accent}>
+    <SheetFrame ref={ref} primaryColor={primaryColor}>
       <SheetHeader
         companyName={settings.companyName}
         logoUrl={settings.logoUrl}
-        title={priceList.title || fa.sheets.priceListTitle}
-        number={priceList.number}
-        date={priceList.date}
-        subtitle={
+        icon="priceList"
+        primaryColor={primaryColor}
+        accentColor={accentColor}
+        label={fa.sheets.listTitleLabel}
+        value={priceList.title || `#${priceList.number}`}
+        date={formatSheetDate(priceList.date)}
+        subline={
           priceList.basketCount
-            ? `${fa.sheets.basketCount}: ${priceList.basketCount}`
+            ? `${fa.sheets.basketCount} : ${priceList.basketCount}`
             : null
         }
       />
 
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+      <div
+        style={{
+          marginTop: "28px",
+          display: "grid",
+          gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+          gap: "0 24px",
+          alignItems: "start",
+        }}
+      >
         {columns.map((column, ci) => (
           <table
             key={ci}
             style={{
-              flex: 1,
-              borderCollapse: "collapse",
-              fontSize: 12.5,
-              tableLayout: "fixed",
+              width: "100%",
+              fontSize: "13px",
+              borderCollapse: "separate",
+              borderSpacing: 0,
+              borderRadius: "8px",
+              overflow: "hidden",
+              border: "1px solid #e5e5e5",
             }}
           >
             <thead>
-              <tr style={{ background: "#f3f4f6" }}>
-                <th
-                  style={{
-                    textAlign: "start",
-                    padding: "6px 8px",
-                    borderBottom: `2px solid ${accent}`,
-                    fontWeight: 700,
-                  }}
-                >
+              <tr style={{ background: primaryColor, color: "#ffffff" }}>
+                <th style={{ padding: "8px 12px", textAlign: "start", fontWeight: 600 }}>
                   {fa.sheets.item}
                 </th>
-                <th
-                  style={{
-                    textAlign: "end",
-                    padding: "6px 8px",
-                    borderBottom: `2px solid ${accent}`,
-                    fontWeight: 700,
-                    width: 80,
-                  }}
-                >
+                <th style={{ padding: "8px 12px", textAlign: "end", fontWeight: 600 }}>
                   {fa.sheets.price}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {column.map((item, i) => (
-                <tr key={item.id} style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}>
-                  <td
-                    style={{
-                      padding: "5px 8px",
-                      borderBottom: "1px solid #e5e7eb",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {item.name}
-                  </td>
-                  <td
-                    style={{
-                      padding: "5px 8px",
-                      textAlign: "end",
-                      borderBottom: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <span dir="ltr">{formatAmount(item.price)}</span>
-                  </td>
-                </tr>
-              ))}
+              {column.map((item, i) => {
+                const cellStyle = {
+                  padding: "7px 12px",
+                  background: i % 2 === 0 ? "#fafafa" : "#ffffff",
+                  borderBottom: "1px solid #ececec",
+                } as const
+                return (
+                  <tr key={item.id}>
+                    <td style={{ ...cellStyle, fontWeight: 500 }}>{item.name}</td>
+                    <td
+                      style={{
+                        ...cellStyle,
+                        textAlign: "end",
+                        fontVariantNumeric: "tabular-nums",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {formatAmount(item.price)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ))}
       </div>
 
-      <ExpenseBox expenses={priceList.expenses} accentColor={accent} />
-
-      <DeductionTotals
+      <DeductionFooter
+        expenses={priceList.expenses}
+        expensesTotal={totals.expenses}
         subtotal={totals.subtotal}
         commission={totals.commission}
-        expenses={totals.expenses}
+        commissionLabel={commissionLabel(
+          priceList.commission,
+          priceList.commissionIsPercent
+        )}
         grandTotal={totals.grandTotal}
-        accentColor={accent}
+        primaryColor={primaryColor}
+        accentColor={accentColor}
       />
 
       <SheetNotes notes={priceList.notes} />

@@ -9,6 +9,9 @@ import {
   SheetHeader,
   SheetNotes,
   SheetTable,
+  footerCell,
+  formatLongDate,
+  labelStyle,
   type SheetColumn,
 } from "./sheet"
 
@@ -24,16 +27,20 @@ export function ReceiptSheet({
   settings: Settings
 }) {
   const cols: ReceiptColumns = settings.receiptColumns
-  const accent = settings.primaryColor
+  const { primaryColor, accentColor } = settings
 
   const totalCount = receipt.items.reduce((s, i) => s + i.quantity, 0)
   const totalWeight = receipt.items.reduce((s, i) => s + i.weight, 0)
+
+  // The جمع label runs under the product column, plus علامت when it is shown.
+  const labelColSpan = 1 + (cols.sign ? 1 : 0)
 
   // The product column is always present; the rest are toggled in settings.
   const columns: SheetColumn<Receipt["items"][number]>[] = [
     {
       key: "product",
       label: fa.sheets.product,
+      strong: true,
       render: (i) => i.productName,
     },
   ]
@@ -42,21 +49,20 @@ export function ReceiptSheet({
     columns.push({
       key: "sign",
       label: fa.sheets.sign,
-      width: 120,
       render: (i) =>
         i.colorName || i.colorHex ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
                 display: "inline-block",
-                width: 10,
-                height: 10,
-                borderRadius: 999,
+                width: "12px",
+                height: "12px",
+                borderRadius: "9999px",
                 background: i.colorHex,
-                border: "1px solid rgba(0,0,0,.15)",
+                border: "1px solid rgba(0,0,0,0.1)",
               }}
             />
-            {i.colorName}
+            <span>{i.colorName}</span>
           </span>
         ) : null,
     })
@@ -66,9 +72,8 @@ export function ReceiptSheet({
     columns.push({
       key: "count",
       label: fa.sheets.count,
-      align: "end",
-      width: 90,
-      render: (i) => <span dir="ltr">{i.quantity}</span>,
+      numeric: true,
+      render: (i) => i.quantity,
     })
   }
 
@@ -76,9 +81,8 @@ export function ReceiptSheet({
     columns.push({
       key: "unitWeight",
       label: fa.sheets.unitWeight,
-      align: "end",
-      width: 110,
-      render: (i) => <span dir="ltr">{formatUnitWeight(i.unitWeight)}</span>,
+      numeric: true,
+      render: (i) => formatUnitWeight(i.unitWeight),
     })
   }
 
@@ -86,54 +90,56 @@ export function ReceiptSheet({
     columns.push({
       key: "totalWeight",
       label: fa.sheets.totalWeight,
-      align: "end",
-      width: 120,
-      render: (i) => <span dir="ltr">{formatTotalWeight(i.weight)}</span>,
+      numeric: true,
+      cellStyle: { fontWeight: 500 },
+      // Bare figures down the column; only the جمع band carries the unit.
+      render: (i) => formatUnitWeight(i.weight),
     })
   }
 
   return (
-    <SheetFrame ref={ref} accentColor={accent}>
+    <SheetFrame ref={ref} primaryColor={primaryColor}>
       <SheetHeader
         companyName={settings.companyName}
         logoUrl={settings.logoUrl}
-        title={fa.sheets.receiptTitle}
-        number={receipt.number}
-        date={receipt.date}
-        subtitle={receipt.clientName ? `${fa.sheets.client}: ${receipt.clientName}` : null}
+        icon="receipt"
+        primaryColor={primaryColor}
+        accentColor={accentColor}
+        label={fa.sheets.receiptNumberLabel}
+        value={`#${receipt.number}`}
+        valueWeight={600}
+        tabularValue
+        date={formatLongDate(receipt.date)}
       />
+
+      {/* The client sits on its own line under the rule rather than in the
+          masthead — it is the one field a reader looks for first. */}
+      <div style={{ marginTop: "20px", fontSize: "14px" }}>
+        <div style={labelStyle}>{fa.sheets.client}</div>
+        <div style={{ marginTop: "2px", fontSize: "16px", fontWeight: 500 }}>
+          {receipt.clientName || fa.sheets.noClient}
+        </div>
+      </div>
 
       <SheetTable
         columns={columns}
         rows={receipt.items}
-        accentColor={accent}
+        primaryColor={primaryColor}
+        rowKey={(i) => i.id}
         footer={
-          <tr style={{ background: "#f3f4f6", fontWeight: 700 }}>
-            <td style={{ padding: "8px 10px", borderTop: `2px solid ${accent}` }}>
+          <tr>
+            <td colSpan={labelColSpan} style={footerCell({ fontWeight: 600 })}>
               {fa.common.total}
             </td>
-            {cols.sign ? <td style={{ borderTop: `2px solid ${accent}` }} /> : null}
             {cols.count ? (
-              <td
-                style={{
-                  padding: "8px 10px",
-                  textAlign: "end",
-                  borderTop: `2px solid ${accent}`,
-                }}
-              >
-                <span dir="ltr">{totalCount}</span>
+              <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
+                {totalCount}
               </td>
             ) : null}
-            {cols.unitWeight ? <td style={{ borderTop: `2px solid ${accent}` }} /> : null}
+            {cols.unitWeight ? <td style={footerCell()} /> : null}
             {cols.totalWeight ? (
-              <td
-                style={{
-                  padding: "8px 10px",
-                  textAlign: "end",
-                  borderTop: `2px solid ${accent}`,
-                }}
-              >
-                <span dir="ltr">{formatTotalWeight(totalWeight)}</span>
+              <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
+                {formatTotalWeight(totalWeight)}
               </td>
             ) : null}
           </tr>

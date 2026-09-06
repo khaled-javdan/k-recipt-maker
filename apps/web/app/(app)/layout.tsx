@@ -33,7 +33,10 @@ export default async function AppLayout({
   return (
     <LayoutWidthProvider defaultWidth={layoutWidth}>
       <SidebarProvider>
-        <AppSidebar companyName={settings.companyName} />
+        <AppSidebar
+          companyName={settings.companyName}
+          logoUrl={settings.logoUrl}
+        />
         <SidebarInset>
           <AppHeader user={user} />
           <div className="flex-1 p-4 md:p-6">

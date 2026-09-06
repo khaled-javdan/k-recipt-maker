@@ -1,107 +1,169 @@
-import type { CSSProperties, ReactNode } from "react"
+import type { ReactNode } from "react"
 
 import { formatAmount, formatMoney } from "@/lib/calc"
 import { fa } from "@/lib/fa"
 import type { ExpenseItem } from "@/lib/types"
 
-// The parts فیش مزاد and فیش من have in common: an itemised هزینه‌ها box and
-// the subtotal − حق − هزینه‌ها stack beneath it.
+// The block فیش مزاد and فیش من share below their tables: the itemised هزینه‌ها
+// box on the leading edge and the subtotal − حق − هزینه‌ها stack on the other,
+// closing on the خالص figure.
 
-export function ExpenseBox({
+const MUTED = "#525252"
+const HAIRLINE = "#e5e5e5"
+
+/**
+ * The two sit on one row facing apart, so on an RTL sheet the costs land on the
+ * right and the totals on the left. With no cost lines the spacer keeps the
+ * totals where they belong instead of letting them slide across.
+ */
+export function DeductionFooter({
   expenses,
-  accentColor,
-}: {
-  expenses: ExpenseItem[]
-  accentColor: string
-}) {
-  if (expenses.length === 0) return null
-
-  return (
-    // Sized to its contents rather than the sheet, so it sits as a small block
-    // beside the totals instead of a full-width band across the page.
-    <div
-      style={{
-        marginTop: 16,
-        border: `1px solid ${accentColor}22`,
-        borderRadius: 6,
-        padding: "10px 12px",
-        width: "fit-content",
-        minWidth: 240,
-        fontSize: 12,
-      }}
-    >
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>{fa.sheets.expenses}</div>
-      {expenses.map((e) => (
-        <div
-          key={e.id}
-          style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "2px 0" }}
-        >
-          <span>{e.label}</span>
-          <span dir="ltr">{formatAmount(e.amount)}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** Subtotal, حق and هزینه‌ها as deductions, then the net figure. */
-export function DeductionTotals({
+  expensesTotal,
   subtotal,
   commission,
-  expenses,
+  commissionLabel,
   grandTotal,
+  primaryColor,
   accentColor,
-  extra,
+  leadingTotal,
 }: {
+  expenses: ExpenseItem[]
+  expensesTotal: number
   subtotal: number
   commission: number
-  expenses: number
+  commissionLabel: string
   grandTotal: number
+  primaryColor: string
   accentColor: string
-  extra?: ReactNode
+  /** فیش من opens its stack with the total weight. */
+  leadingTotal?: ReactNode
 }) {
-  const row: CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 24,
-    padding: "5px 10px",
-    fontSize: 13,
-  }
-
   return (
-    <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-start" }}>
-      <div style={{ minWidth: 280 }}>
-        {extra}
-        <div style={row}>
-          <span>{fa.sheets.subtotal}</span>
-          <span dir="ltr">{formatAmount(subtotal)}</span>
-        </div>
-        {commission ? (
-          <div style={row}>
-            <span>{fa.sheets.commission}</span>
-            <span dir="ltr">−{formatAmount(commission)}</span>
-          </div>
-        ) : null}
-        {expenses ? (
-          <div style={row}>
+    <div
+      style={{
+        marginTop: "24px",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: "24px",
+      }}
+    >
+      {expenses.length ? (
+        <div
+          style={{
+            border: `1px solid ${HAIRLINE}`,
+            borderRadius: "8px",
+            padding: "10px 0",
+            minWidth: "200px",
+            fontSize: "13px",
+          }}
+        >
+          {expenses.map((e) => (
+            <div
+              key={e.id}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                gap: "16px",
+                padding: "5px 16px",
+                color: MUTED,
+              }}
+            >
+              <span>{e.label || fa.sheets.expenses}</span>
+              <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                {formatAmount(e.amount)}
+              </span>
+            </div>
+          ))}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: "16px",
+              marginTop: "4px",
+              padding: "8px 16px 2px",
+              borderTop: `1px solid ${HAIRLINE}`,
+              fontWeight: 700,
+            }}
+          >
             <span>{fa.sheets.expenses}</span>
-            <span dir="ltr">−{formatAmount(expenses)}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+              {formatAmount(expensesTotal)}
+            </span>
           </div>
+        </div>
+      ) : (
+        <div />
+      )}
+
+      <div style={{ width: "320px", maxWidth: "100%" }}>
+        {leadingTotal}
+        <TotalLine label={fa.sheets.subtotal} value={formatAmount(subtotal)} />
+        {commission ? (
+          <TotalLine label={commissionLabel} value={`− ${formatAmount(commission)}`} />
+        ) : null}
+        {expensesTotal ? (
+          <TotalLine label={fa.sheets.expenses} value={`− ${formatAmount(expensesTotal)}`} />
         ) : null}
         <div
           style={{
-            ...row,
-            fontSize: 15,
-            fontWeight: 700,
-            borderTop: `2px solid ${accentColor}`,
-            marginTop: 4,
-            paddingTop: 8,
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: "16px",
+            marginTop: "6px",
+            background: "#f5f5f5",
+            borderTop: `2px solid ${primaryColor}`,
+            padding: "12px 16px",
+            borderRadius: "6px",
           }}
         >
-          <span>{fa.sheets.grandTotal}</span>
-          <span dir="ltr">{formatMoney(grandTotal)}</span>
+          <span style={{ fontSize: "13px", fontWeight: 700 }}>{fa.sheets.grandTotal}</span>
+          <span
+            style={{
+              fontSize: "22px",
+              fontWeight: 700,
+              color: accentColor,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {formatMoney(grandTotal)}
+          </span>
         </div>
       </div>
     </div>
   )
+}
+
+export function TotalLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        gap: "16px",
+        padding: "6px 16px",
+        fontSize: "14px",
+        color: MUTED,
+      }}
+    >
+      <span>{label}</span>
+      <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+/** حق reads as "حق (۵٪)" when it was entered as a percentage. */
+export function commissionLabel(
+  commission: number | null | undefined,
+  isPercent: boolean
+): string {
+  return isPercent && commission
+    ? `${fa.sheets.commission} (${commission}${fa.sheets.percent})`
+    : fa.sheets.commission
 }

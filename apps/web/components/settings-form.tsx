@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@workspace/ui/components/button"
@@ -16,10 +16,12 @@ import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 
 import {
+  removeLogo,
   saveBranding,
   saveLedgerColumns,
   savePriceListConfig,
   saveReceiptColumns,
+  uploadLogo,
 } from "@/actions/settings"
 import { toLatinDigits } from "@/lib/calc"
 import { fa } from "@/lib/fa"
@@ -34,6 +36,39 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   const [receiptColumns, setReceiptColumns] = useState(settings.receiptColumns)
   const [ledgerColumns, setLedgerColumns] = useState(settings.ledgerColumns)
   const [layout, setLayout] = useState(settings.priceListConfig)
+
+  const [logoUrl, setLogoUrl] = useState(settings.logoUrl)
+  const [logoBusy, setLogoBusy] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  const pickLogo = async (file: File | undefined) => {
+    if (!file) return
+    setLogoBusy(true)
+    const formData = new FormData()
+    formData.set("logo", file)
+    const result = await uploadLogo(formData)
+    setLogoBusy(false)
+    // Clearing the input matters: picking the same file twice in a row fires
+    // no change event otherwise, so a failed upload could not be retried.
+    if (fileInput.current) fileInput.current.value = ""
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    setLogoUrl(result.url ?? null)
+    toast.success(fa.settings.logoUploaded)
+    // The sidebar reads the logo from the layout, which is a server component.
+    router.refresh()
+  }
+
+  const clearLogo = async () => {
+    setLogoBusy(true)
+    await removeLogo()
+    setLogoBusy(false)
+    setLogoUrl(null)
+    toast.success(fa.settings.logoRemoved)
+    router.refresh()
+  }
 
   const submitBranding = async (formData: FormData) => {
     formData.set("primaryColor", primary)
@@ -76,6 +111,59 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
   return (
     <div className="grid gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{fa.settings.logo}</CardTitle>
+          <CardDescription>{fa.settings.logoDesc}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="bg-muted/40 flex h-20 w-32 shrink-0 items-center justify-center overflow-hidden rounded-md border">
+              {logoUrl ? (
+                // A plain <img>: the blob host would otherwise need a
+                // remotePatterns entry, and the sheets render it this way too.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt={fa.settings.logo}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <span className="text-muted-foreground px-2 text-center text-xs">
+                  {fa.settings.logoEmpty}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={(e) => pickLogo(e.target.files?.[0])}
+              />
+              <Button
+                variant="outline"
+                disabled={logoBusy}
+                onClick={() => fileInput.current?.click()}
+              >
+                {logoBusy
+                  ? fa.settings.uploading
+                  : logoUrl
+                    ? fa.settings.replaceLogo
+                    : fa.settings.upload}
+              </Button>
+              {logoUrl ? (
+                <Button variant="ghost" disabled={logoBusy} onClick={clearLogo}>
+                  {fa.settings.removeLogo}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>{fa.settings.branding}</CardTitle>

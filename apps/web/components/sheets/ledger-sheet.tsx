@@ -1,11 +1,19 @@
 import type { Ref } from "react"
 
-import { formatAmount, ledgerBalances } from "@/lib/calc"
+import { formatAmount, formatMoney, ledgerBalances } from "@/lib/calc"
 import { fa } from "@/lib/fa"
-import { formatSheetDate } from "./sheet"
 import type { Ledger, Settings } from "@/lib/types"
 
-import { SheetFrame, SheetHeader, SheetNotes, SheetTable, type SheetColumn } from "./sheet"
+import {
+  SheetFrame,
+  SheetHeader,
+  SheetNotes,
+  SheetTable,
+  footerCell,
+  formatLongDate,
+  formatShortDate,
+  type SheetColumn,
+} from "./sheet"
 
 // حساب — the account sheet. مانده is cumulative: each row carries the previous
 // rows forward, and the sheet's total is simply the last row's figure.
@@ -19,104 +27,96 @@ export function LedgerSheet({
   settings: Settings
 }) {
   const cols = settings.ledgerColumns
-  const accent = settings.primaryColor
+  const { primaryColor, accentColor } = settings
   const { cumulative, grandTotal } = ledgerBalances(ledger.rows)
 
   type Row = Ledger["rows"][number]
   const columns: SheetColumn<Row>[] = [
-    { key: "name", label: fa.common.name, render: (r) => r.name },
+    { key: "name", label: fa.common.name, strong: true, render: (r) => r.name },
   ]
 
   if (cols.invoice) {
     columns.push({
       key: "invoice",
       label: fa.sheets.invoice,
-      align: "end",
-      width: 110,
-      render: (r) => <span dir="ltr">{formatAmount(r.invoice)}</span>,
+      numeric: true,
+      render: (r) => formatAmount(r.invoice),
     })
   }
   if (cols.commission) {
     columns.push({
       key: "commission",
       label: fa.sheets.commission,
-      align: "end",
-      width: 100,
-      render: (r) => <span dir="ltr">{formatAmount(r.commission)}</span>,
+      numeric: true,
+      render: (r) => formatAmount(r.commission),
     })
   }
   if (cols.cash) {
     columns.push({
       key: "cash",
       label: fa.sheets.cash,
-      align: "end",
-      width: 110,
-      render: (r) => <span dir="ltr">{formatAmount(r.cash)}</span>,
+      numeric: true,
+      render: (r) => formatAmount(r.cash),
     })
   }
   if (cols.balance) {
     columns.push({
       key: "balance",
       label: fa.sheets.balance,
-      align: "end",
-      width: 110,
-      render: (_r, i) => <span dir="ltr">{formatAmount(cumulative[i] ?? 0)}</span>,
+      numeric: true,
+      cellStyle: { fontWeight: 600, color: accentColor },
+      render: (_r, i) => formatAmount(cumulative[i] ?? 0),
     })
   }
   if (cols.date) {
     columns.push({
       key: "date",
       label: fa.common.date,
-      align: "end",
-      width: 110,
-      render: (r) => <span dir="ltr">{r.date ? formatSheetDate(r.date) : ""}</span>,
+      cellStyle: { color: "#525252", whiteSpace: "nowrap" },
+      render: (r) => (r.date ? formatShortDate(r.date) : ""),
     })
   }
 
-  // Where the grand total sits depends on which columns are switched on: it
-  // goes under مانده when that column is shown, otherwise under the last
-  // money column, with any trailing date column left blank.
-  const totalIndex = columns.findIndex((c) => c.key === "balance")
-  const valueIndex = totalIndex === -1 ? columns.length - 1 : totalIndex
-  const labelSpan = valueIndex
-  const trailingSpan = columns.length - valueIndex - 1
+  // The جمع figure belongs in the مانده column. With مانده hidden there is no
+  // column to put it under, so the label carries the number itself and spans
+  // the row instead.
+  const preBalanceCount =
+    1 + (cols.invoice ? 1 : 0) + (cols.commission ? 1 : 0) + (cols.cash ? 1 : 0)
+  const labelColSpan = cols.balance
+    ? preBalanceCount
+    : preBalanceCount + (cols.date ? 1 : 0)
 
   return (
-    <SheetFrame ref={ref} accentColor={accent}>
+    <SheetFrame ref={ref} primaryColor={primaryColor}>
       <SheetHeader
         companyName={settings.companyName}
         logoUrl={settings.logoUrl}
-        title={ledger.title || fa.sheets.ledgerTitle}
-        number={ledger.number}
-        date={ledger.date}
+        icon="ledger"
+        primaryColor={primaryColor}
+        accentColor={accentColor}
+        label={fa.sheets.ledgerTitleLabel}
+        value={ledger.title || `#${ledger.number}`}
+        date={formatLongDate(ledger.date)}
       />
 
       <SheetTable
         columns={columns}
         rows={ledger.rows}
-        accentColor={accent}
+        primaryColor={primaryColor}
+        rowKey={(r) => r.id}
         footer={
-          <tr style={{ background: "#f3f4f6", fontWeight: 700 }}>
-            {/* The total belongs under مانده, so the label spans the columns
-                before it and the date column (if shown) stays empty after. */}
-            <td
-              colSpan={labelSpan}
-              style={{ padding: "8px 10px", borderTop: `2px solid ${accent}` }}
-            >
-              {fa.common.total}
+          <tr>
+            <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
+              {cols.balance
+                ? fa.common.total
+                : `${fa.common.total}: ${formatMoney(grandTotal)}`}
             </td>
-            <td
-              style={{
-                padding: "8px 10px",
-                textAlign: "end",
-                borderTop: `2px solid ${accent}`,
-              }}
-            >
-              <span dir="ltr">{formatAmount(grandTotal)}</span>
-            </td>
-            {trailingSpan > 0 ? (
-              <td colSpan={trailingSpan} style={{ borderTop: `2px solid ${accent}` }} />
+            {cols.balance ? (
+              <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
+                {formatMoney(grandTotal)}
+              </td>
             ) : null}
+            {cols.balance && cols.date ? <td style={footerCell()} /> : null}
           </tr>
         }
       />

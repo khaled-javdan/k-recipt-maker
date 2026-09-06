@@ -101,6 +101,14 @@ export const fa = {
     grandTotal: "خالص",
     basketCount: "تعداد باسکت",
     itemsCount: "تعداد اقلام",
+    percent: "٪",
+
+    // The small grey caption above each sheet's headline, naming what the
+    // headline is: a number on فیش, a title on the other three.
+    receiptNumberLabel: "فاکتور شماره",
+    ledgerTitleLabel: "عنوان حساب",
+    listTitleLabel: "نام مشتری / لیست",
+    noClient: "بدون مشتری",
   },
 
   // The حق earned on a sheet type, summed over a window. Shown on the sheet
@@ -215,7 +223,15 @@ export const fa = {
     primaryColor: "رنگ اصلی",
     accentColor: "رنگ تاکیدی",
     logo: "لوگو",
+    logoDesc: "روی فیش‌های چاپی و در نوار کناری برنامه نمایش داده می‌شود.",
     logoTooLarge: "حجم لوگو باید کمتر از ۲ مگابایت باشد",
+    logoBadType: "فقط PNG، JPG، WEBP یا SVG",
+    logoMissing: "فایلی انتخاب نشده است",
+    logoEmpty: "هنوز لوگویی بارگذاری نشده است",
+    logoUploaded: "لوگو بارگذاری شد",
+    logoRemoved: "لوگو حذف شد",
+    uploading: "در حال بارگذاری…",
+    replaceLogo: "تغییر لوگو",
     removeLogo: "حذف لوگو",
     upload: "بارگذاری",
     receiptColumns: "ستون‌های فیش",

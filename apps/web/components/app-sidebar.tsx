@@ -43,7 +43,13 @@ const REFERENCE = [
   { href: "/settings", label: fa.nav.settings, icon: Settings01Icon },
 ] as const
 
-export function AppSidebar({ companyName }: { companyName: string }) {
+export function AppSidebar({
+  companyName,
+  logoUrl,
+}: {
+  companyName: string
+  logoUrl: string | null
+}) {
   const pathname = usePathname()
 
   // A document's own pages (/receipts/new, /receipts/:id) keep its nav item
@@ -55,8 +61,18 @@ export function AppSidebar({ companyName }: { companyName: string }) {
   return (
     <Sidebar side="right" collapsible="icon">
       <SidebarHeader>
+        {/* The logo has to survive the collapsed rail, where the name is
+            hidden and the icon-sized square is all that is left. */}
         <div className="flex items-center gap-2 px-2 py-1.5">
-          <span className="truncate text-sm font-semibold">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt=""
+              className="size-6 shrink-0 rounded-sm object-contain"
+            />
+          ) : null}
+          <span className="truncate text-sm font-semibold group-data-[collapsible=icon]:hidden">
             {companyName || fa.appName}
           </span>
         </div>
