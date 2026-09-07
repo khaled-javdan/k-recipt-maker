@@ -10,6 +10,7 @@ import {
   Card,
   CardAction,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
@@ -25,6 +26,7 @@ import {
   formatTotalWeight,
   manLineAmount,
   parseNumber,
+  roundMoneyInput,
   snapPriceInput,
 } from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
@@ -275,12 +277,6 @@ export function DeductionEditor({
       <Card>
         <CardHeader>
           <CardTitle>{fa.sheets.item}</CardTitle>
-          <CardAction>
-            <Button variant="outline" size="sm" onClick={appendItem}>
-              <HugeiconsIcon icon={Add01Icon} />
-              {fa.actions.addRow}
-            </Button>
-          </CardAction>
         </CardHeader>
         <CardContent>
           <EditorTable
@@ -353,6 +349,9 @@ export function DeductionEditor({
                       value={item.ratePerMan}
                       aria-label={fa.sheets.pricePerMan}
                       onValueChange={(v) => updateItem(index, { ratePerMan: v })}
+                      onBlurValue={(v) =>
+                        updateItem(index, { ratePerMan: roundMoneyInput(v) })
+                      }
                     />
                   </>
                 ) : (
@@ -400,6 +399,17 @@ export function DeductionEditor({
             ))}
           </EditorTable>
         </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={appendItem}
+          >
+            <HugeiconsIcon icon={Add01Icon} />
+            {fa.actions.addRow}
+          </Button>
+        </CardFooter>
       </Card>
 
       <Card>
@@ -436,6 +446,13 @@ export function DeductionEditor({
                   setCommission(v)
                   touch()
                 }}
+                // A flat حق is money and rounds; a percentage is a rate, where
+                // 2.5% is a real setting that must survive losing focus.
+                onBlurValue={(v) => {
+                  if (commissionIsPercent) return
+                  setCommission(roundMoneyInput(v))
+                  touch()
+                }}
               />
             </div>
 
@@ -451,19 +468,6 @@ export function DeductionEditor({
       <Card>
         <CardHeader>
           <CardTitle>{fa.sheets.expenses}</CardTitle>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setExpenses((r) => [...r, emptyExpense()])
-                touch()
-              }}
-            >
-              <HugeiconsIcon icon={Add01Icon} />
-              {fa.editor.addExpense}
-            </Button>
-          </CardAction>
         </CardHeader>
         <CardContent>
           {expenses.length === 0 ? (
@@ -500,6 +504,12 @@ export function DeductionEditor({
                       setExpenses((r) => replaceAt(r, index, { ...r[index]!, amount: v }))
                       touch()
                     }}
+                    onBlurValue={(v) => {
+                      setExpenses((r) =>
+                        replaceAt(r, index, { ...r[index]!, amount: roundMoneyInput(v) })
+                      )
+                      touch()
+                    }}
                   />
                   <Button
                     variant="ghost"
@@ -517,6 +527,20 @@ export function DeductionEditor({
             </EditorTable>
           )}
         </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              setExpenses((r) => [...r, emptyExpense()])
+              touch()
+            }}
+          >
+            <HugeiconsIcon icon={Add01Icon} />
+            {fa.editor.addExpense}
+          </Button>
+        </CardFooter>
       </Card>
 
       <Card>

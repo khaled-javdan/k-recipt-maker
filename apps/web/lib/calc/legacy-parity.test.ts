@@ -107,10 +107,14 @@ describe("parity with the original app", () => {
     }
   })
 
+  // Money formatting is the one deliberate divergence: these sheets settle in
+  // whole units, so the rewrite prints no decimals where the original printed
+  // up to two. Pinned as "the original, rounded" rather than dropped, so the
+  // difference stays exactly one rounding step and nothing more.
   it("formatters", () => {
     for (const n of nums) {
-      expect(next.formatMoney(n)).toBe(old.formatMoney(n))
-      expect(next.formatAmount(n)).toBe(old.formatAmount(n))
+      expect(next.formatMoney(n)).toBe(old.formatMoney(Math.round(n)))
+      expect(next.formatAmount(n)).toBe(old.formatAmount(Math.round(n)))
       expect(next.formatUnitWeight(n)).toBe(old.formatUnitWeight(n))
       expect(next.formatTotalWeight(n)).toBe(old.formatTotalWeight(n))
     }

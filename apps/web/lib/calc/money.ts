@@ -18,8 +18,27 @@ export function snapPriceInput(raw: string): string {
   return String(snapToFive(n))
 }
 
+// Money on these sheets settles in whole units — nobody hands over a fraction
+// of a dirham, so a price is never shown or stored with decimals. This is a
+// deliberate divergence from the original app, which printed up to two.
+export function roundMoney(value: number): number {
+  if (!Number.isFinite(value)) return 0
+  return Math.round(value)
+}
+
+// String-in/string-out, for a money field losing focus. Blank stays blank and
+// anything unparseable is left alone rather than silently zeroed, matching
+// snapPriceInput.
+export function roundMoneyInput(raw: string): string {
+  const trimmed = toLatinDigits(raw).trim()
+  if (!trimmed) return ""
+  const n = Number(trimmed)
+  if (!Number.isFinite(n)) return raw
+  return String(roundMoney(n))
+}
+
 const amountFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 0,
 })
 
 export const CURRENCY = "AED"

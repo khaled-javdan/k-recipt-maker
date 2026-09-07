@@ -125,6 +125,53 @@ describe("runImport — حق (commissionAmount)", () => {
   })
 })
 
+describe("runImport — receipt weights", () => {
+  // The old app's `weight` was per-unit and its printed total was
+  // quantity × weight; here `weight` is the line total. Copying verbatim made
+  // a 5521 kg receipt read 235 kg.
+  it("derives the line total from the old per-unit weight", async () => {
+    const { tx, created } = recorder()
+    await runImport(tx, "u1", parse({
+      receipts: [
+        {
+          number: 1001,
+          date: "2026-09-01",
+          items: [
+            // Old app: unitWeight is the product default (often 0), weight is
+            // what was typed on the line.
+            { productName: "کنعد کبیر", unitWeight: 0, weight: 75, quantity: 10 },
+          ],
+        },
+      ],
+    }))
+
+    expect(created.receipt?.[0]).toMatchObject({
+      items: { create: [expect.objectContaining({ unitWeight: 75, quantity: 10, weight: 750 })] },
+    })
+  })
+
+  it("sums to the total the old sheet printed", async () => {
+    const { tx, created } = recorder()
+    await runImport(tx, "u1", parse({
+      receipts: [
+        {
+          number: 1001,
+          date: "2026-09-01",
+          items: [
+            { productName: "a", unitWeight: 0, weight: 75, quantity: 10 },
+            { productName: "b", unitWeight: 0, weight: 72.857, quantity: 7 },
+            { productName: "c", unitWeight: 0, weight: 85, quantity: 2 },
+          ],
+        },
+      ],
+    }))
+
+    const lines = (created.receipt?.[0] as { items: { create: { weight: number }[] } }).items.create
+    const total = lines.reduce((s, l) => s + l.weight, 0)
+    expect(total).toBeCloseTo(75 * 10 + 72.857 * 7 + 85 * 2, 3)
+  })
+})
+
 describe("runImport — legacy expenses", () => {
   it("folds the old scalar expenses field into a single line", async () => {
     const { tx, created } = recorder()

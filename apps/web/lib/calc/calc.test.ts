@@ -11,6 +11,7 @@ import {
   manLineAmount,
   manReceiptTotals,
   parseNumber,
+  roundMoneyInput,
   pricePerKg,
   pricePerManFromKg,
   rowBalance,
@@ -64,6 +65,26 @@ describe("snapPriceInput", () => {
 
   it("accepts Persian digits", () => {
     expect(snapPriceInput("۵۷")).toBe("55")
+  })
+})
+
+describe("roundMoneyInput", () => {
+  it("keeps a blank field blank", () => {
+    expect(roundMoneyInput("")).toBe("")
+    expect(roundMoneyInput("   ")).toBe("")
+  })
+
+  it("rounds a typed amount to a whole unit", () => {
+    expect(roundMoneyInput("82.7")).toBe("83")
+    expect(roundMoneyInput("82.4")).toBe("82")
+  })
+
+  it("leaves unparseable text alone rather than zeroing it", () => {
+    expect(roundMoneyInput("abc")).toBe("abc")
+  })
+
+  it("accepts Persian digits", () => {
+    expect(roundMoneyInput("۸۲.۷")).toBe("83")
   })
 })
 
@@ -229,12 +250,15 @@ describe("layoutColumns", () => {
 describe("formatting", () => {
   it("formats money with the currency prefix", () => {
     expect(formatMoney(1470)).toBe("AED 1,470")
-    expect(formatMoney(1470.5)).toBe("AED 1,470.5")
+    // Money is printed in whole units — nobody settles a fraction of a dirham.
+    expect(formatMoney(1470.5)).toBe("AED 1,471")
+    expect(formatMoney(1470.4)).toBe("AED 1,470")
     expect(formatMoney(NaN)).toBe("AED 0")
   })
 
   it("formats a bare amount without the currency", () => {
     expect(formatAmount(1470)).toBe("1,470")
+    expect(formatAmount(1470.6)).toBe("1,471")
     expect(formatAmount(NaN)).toBe("0")
   })
 

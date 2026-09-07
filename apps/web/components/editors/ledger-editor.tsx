@@ -8,8 +8,8 @@ import { Add01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
-  CardAction,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
@@ -18,7 +18,12 @@ import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 
 import { saveLedger } from "@/actions/documents"
-import { formatAmount, ledgerBalances, parseNumber } from "@/lib/calc"
+import {
+  formatAmount,
+  ledgerBalances,
+  parseNumber,
+  roundMoneyInput,
+} from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
 import { fa } from "@/lib/fa"
 import { insertAt, moveRow, removeAt, replaceAt } from "@/lib/rows"
@@ -161,19 +166,6 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
       <Card>
         <CardHeader>
           <CardTitle>{fa.nav.ledgers}</CardTitle>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setRows((r) => [...r, emptyRow()])
-                touch()
-              }}
-            >
-              <HugeiconsIcon icon={Add01Icon} />
-              {fa.actions.addRow}
-            </Button>
-          </CardAction>
         </CardHeader>
         <CardContent>
           <EditorTable
@@ -217,16 +209,19 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
                   value={row.invoice}
                   aria-label={fa.sheets.invoice}
                   onValueChange={(v) => update(index, { invoice: v })}
+                  onBlurValue={(v) => update(index, { invoice: roundMoneyInput(v) })}
                 />
                 <NumberInput
                   value={row.commission}
                   aria-label={fa.sheets.commission}
                   onValueChange={(v) => update(index, { commission: v })}
+                  onBlurValue={(v) => update(index, { commission: roundMoneyInput(v) })}
                 />
                 <NumberInput
                   value={row.cash}
                   aria-label={fa.sheets.cash}
                   onValueChange={(v) => update(index, { cash: v })}
+                  onBlurValue={(v) => update(index, { cash: roundMoneyInput(v) })}
                 />
                 <DatePicker
                   value={row.date}
@@ -272,6 +267,20 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
             ))}
           </EditorTable>
         </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              setRows((r) => [...r, emptyRow()])
+              touch()
+            }}
+          >
+            <HugeiconsIcon icon={Add01Icon} />
+            {fa.actions.addRow}
+          </Button>
+        </CardFooter>
       </Card>
 
       <Card>

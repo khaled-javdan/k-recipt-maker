@@ -163,18 +163,29 @@ export async function runImport(
         notes: receipt.notes || null,
         createdAt: at(receipt.createdAt),
         items: {
-          create: receipt.items.map((item, position) => ({
-            position,
-            // Product details are denormalised onto the line, so the printed
-            // sheet is complete without the pointer back to the Product row.
-            productId: null,
-            productName: item.productName,
-            colorName: item.colorName ?? "",
-            colorHex: item.colorHex ?? "#9ca3af",
-            unitWeight: item.unitWeight,
-            quantity: Math.round(item.quantity),
-            weight: item.weight,
-          })),
+          create: receipt.items.map((item, position) => {
+            // The two apps mean different things by these fields. In the old
+            // one `weight` was the per-unit weight typed on the line and
+            // `unitWeight` merely the product's catalogue default (often 0),
+            // with the printed total derived as quantity × weight. Here
+            // `unitWeight` is the per-unit figure and `weight` is the line
+            // total. Copying across verbatim printed the unit weight as the
+            // total — receipt #1040 read 235 kg instead of 5521.
+            const unitWeight = item.weight
+            const quantity = Math.round(item.quantity)
+            return {
+              position,
+              // Product details are denormalised onto the line, so the printed
+              // sheet is complete without the pointer back to the Product row.
+              productId: null,
+              productName: item.productName,
+              colorName: item.colorName ?? "",
+              colorHex: item.colorHex ?? "#9ca3af",
+              unitWeight,
+              quantity,
+              weight: unitWeight * quantity,
+            }
+          }),
         },
       },
     })

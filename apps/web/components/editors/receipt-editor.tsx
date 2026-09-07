@@ -8,8 +8,8 @@ import { Add01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
-  CardAction,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
@@ -214,19 +214,6 @@ export function ReceiptEditor({
       <Card>
         <CardHeader>
           <CardTitle>{fa.sheets.product}</CardTitle>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setItems((r) => [...r, emptyItem()])
-                touch()
-              }}
-            >
-              <HugeiconsIcon icon={Add01Icon} />
-              {fa.actions.addRow}
-            </Button>
-          </CardAction>
         </CardHeader>
         <CardContent className="grid gap-3">
           {products.length === 0 ? (
@@ -325,6 +312,20 @@ export function ReceiptEditor({
             ))}
           </EditorTable>
         </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              setItems((r) => [...r, emptyItem()])
+              touch()
+            }}
+          >
+            <HugeiconsIcon icon={Add01Icon} />
+            {fa.actions.addRow}
+          </Button>
+        </CardFooter>
       </Card>
 
       <Card>
