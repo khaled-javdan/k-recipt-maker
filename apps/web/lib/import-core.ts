@@ -82,6 +82,31 @@ export function findNumberCollisions(data: BackupData): string[] {
   return problems
 }
 
+// The import replaces everything the user owns, so anything they typed into
+// this app after the backup was taken is destroyed by it. That is fine on a
+// first migration and catastrophic on a re-run: it is how two فیش entered on
+// the morning of 2026-09-07 were lost to a re-import at 09:50 the same day.
+// Callers must check this first and refuse unless the operator says otherwise.
+export async function findWorkNewerThan(
+  client: Prisma.TransactionClient,
+  userId: string,
+  cutoff: Date
+): Promise<{ label: string; count: number }[]> {
+  const found: { label: string; count: number }[] = []
+  for (const [label, model] of [
+    ["فیش", client.receipt],
+    ["حساب", client.ledger],
+    ["فیش مزاد", client.priceList],
+    ["فیش من", client.manReceipt],
+  ] as const) {
+    const count = await (model as { count: (a: unknown) => Promise<number> }).count({
+      where: { userId, createdAt: { gt: cutoff } },
+    })
+    if (count) found.push({ label, count })
+  }
+  return found
+}
+
 export async function runImport(
   tx: Prisma.TransactionClient,
   userId: string,

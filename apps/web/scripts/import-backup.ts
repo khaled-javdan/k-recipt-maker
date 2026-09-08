@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 import { prisma } from "@workspace/db"
 import { normalizeUsername } from "@workspace/db/password"
 
-import { findNumberCollisions, runImport } from "@/lib/import-core"
+import { findNumberCollisions, findWorkNewerThan, runImport } from "@/lib/import-core"
 import { importLogo } from "@/lib/import-logo"
 import { backupSchema } from "@/lib/import-schema"
 
@@ -10,6 +10,7 @@ import { backupSchema } from "@/lib/import-schema"
 // account.
 //
 //   pnpm db:import <file.json> --user <username> [--dry-run] [--skip-logo]
+//                  [--force]
 //
 // --skip-logo leaves Settings.logoUrl exactly as it is, for when the logo has
 // already been uploaded by hand and re-uploading it would only orphan a blob.
@@ -18,18 +19,26 @@ import { backupSchema } from "@/lib/import-schema"
 // the file arrives from someone else's device, and a backup carrying a base64
 // logo can exceed the server action body limit on its own.
 
-type Args = { file: string; username: string; dryRun: boolean; skipLogo: boolean }
+type Args = {
+  file: string
+  username: string
+  dryRun: boolean
+  skipLogo: boolean
+  force: boolean
+}
 
 function parseArgs(argv: string[]): Args {
   const positional: string[] = []
   let username = ""
   let dryRun = false
   let skipLogo = false
+  let force = false
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!
     if (arg === "--dry-run") dryRun = true
     else if (arg === "--skip-logo") skipLogo = true
+    else if (arg === "--force") force = true
     else if (arg === "--user") username = argv[++i] ?? ""
     else if (arg.startsWith("--user=")) username = arg.slice("--user=".length)
     else positional.push(arg)
@@ -38,11 +47,11 @@ function parseArgs(argv: string[]): Args {
   const file = positional[0] ?? ""
   if (!file || !username) {
     console.error(
-      "Usage: pnpm db:import <file.json> --user <username> [--dry-run] [--skip-logo]"
+      "Usage: pnpm db:import <file.json> --user <username> [--dry-run] [--skip-logo] [--force]"
     )
     process.exit(1)
   }
-  return { file, username, dryRun, skipLogo }
+  return { file, username, dryRun, skipLogo, force }
 }
 
 // Thrown to unwind the transaction on a dry run. Rolling back real inserts is
@@ -54,7 +63,7 @@ class DryRun extends Error {
   }
 }
 
-const { file, username, dryRun, skipLogo } = parseArgs(process.argv.slice(2))
+const { file, username, dryRun, skipLogo, force } = parseArgs(process.argv.slice(2))
 
 const raw = await readFile(file, "utf8").catch((error: NodeJS.ErrnoException) => {
   console.error(`Could not read ${file}: ${error.message}`)
@@ -103,6 +112,29 @@ console.log(`File     ${file}`)
 console.log(`Exported ${parsed.data.exportedAt ?? "unknown"}`)
 console.log(`Target   ${user.displayName} (${user.username})`)
 console.log(dryRun ? "Mode     dry run — rolled back\n" : "Mode     WRITE — replaces this user's data\n")
+
+// This import deletes everything the user owns before inserting. Anything they
+// entered after the backup was taken is not in the file and will not come back,
+// so it has to be surfaced before the transaction opens rather than discovered
+// the next morning.
+const exportedAt = parsed.data.exportedAt ? new Date(parsed.data.exportedAt) : null
+if (exportedAt && !Number.isNaN(exportedAt.getTime())) {
+  const newer = await findWorkNewerThan(prisma, user.id, exportedAt)
+  if (newer.length) {
+    const summary = newer.map((n) => `${n.count} ${n.label}`).join("، ")
+    if (!force) {
+      console.error(
+        `\nREFUSING TO IMPORT. This account has work entered after the backup was taken` +
+          `\n(${exportedAt.toISOString()}): ${summary}.` +
+          `\n\nA wipe-and-replace import would destroy it — it is not in the file.` +
+          `\nExport it, merge it into the backup, or pass --force if you truly mean to lose it.`
+      )
+      await prisma.$disconnect()
+      process.exit(1)
+    }
+    console.warn(`\n--force: destroying work newer than the backup: ${summary}\n`)
+  }
+}
 
 const logo = skipLogo
   ? ({ status: "absent" } as const)
