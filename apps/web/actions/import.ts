@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@workspace/db"
 
 import { requireAdmin } from "@/lib/dal"
-import { findNumberCollisions, runImport } from "@/lib/import-core"
+import { findNumberCollisions, findWorkNewerThan, runImport } from "@/lib/import-core"
 import { importLogo } from "@/lib/import-logo"
 import { backupSchema } from "@/lib/import-schema"
 
@@ -46,6 +46,20 @@ export async function importBackup(json: string): Promise<ImportResult> {
   const collisions = findNumberCollisions(data)
   if (collisions.length) {
     return { error: `شماره تکراری در فایل: ${collisions.join(" — ")}` }
+  }
+
+  // This replaces everything the account owns, so anything entered into the app
+  // after the backup was taken is destroyed by it. There is no --force here:
+  // a screen that silently eats a morning's work is not worth the convenience.
+  const exportedAt = parsed.data.exportedAt ? new Date(parsed.data.exportedAt) : null
+  if (exportedAt && !Number.isNaN(exportedAt.getTime())) {
+    const newer = await findWorkNewerThan(prisma, admin.id, exportedAt)
+    if (newer.length) {
+      const summary = newer.map((n) => `${n.count} ${n.label}`).join("، ")
+      return {
+        error: `این حساب سندهایی دارد که پس از تهیه فایل پشتیبان ثبت شده‌اند (${summary}). ورود اطلاعات آن‌ها را پاک می‌کند.`,
+      }
+    }
   }
 
   // Uploaded outside the transaction: a network round trip must not hold locks
