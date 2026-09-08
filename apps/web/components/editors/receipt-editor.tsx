@@ -131,30 +131,38 @@ export function ReceiptEditor({
   const submit = async () => {
     setSaving(true)
     const client = clients.find((c) => c.id === clientId)
-    const result = await saveReceipt(receipt?.id ?? null, {
-      clientId: clientId === NO_CLIENT ? null : clientId,
-      clientName: client?.name ?? null,
-      date,
-      notes,
-      items: items.map((i) => ({
-        productId: i.productId,
-        productName: i.productName,
-        colorName: i.colorName,
-        colorHex: i.colorHex,
-        unitWeight: parseNumber(i.unitWeight),
-        quantity: parseNumber(i.quantity),
-        weight: lineWeight(i),
-      })),
-    })
-    setSaving(false)
+    try {
+      const result = await saveReceipt(receipt?.id ?? null, {
+        clientId: clientId === NO_CLIENT ? null : clientId,
+        clientName: client?.name ?? null,
+        date,
+        notes,
+        items: items.map((i) => ({
+          productId: i.productId,
+          productName: i.productName,
+          colorName: i.colorName,
+          colorHex: i.colorHex,
+          unitWeight: parseNumber(i.unitWeight),
+          quantity: parseNumber(i.quantity),
+          weight: lineWeight(i),
+        })),
+      })
 
-    if (result.error) {
-      toast.error(result.error)
-      return
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      setDirty(false)
+      toast.success(fa.common.saved)
+      router.push(`/receipts/${result.id}`)
+    } catch {
+      // A dropped connection must not pass for a save. The document stays
+      // dirty so the unsaved-changes guard keeps protecting it — and `saving`
+      // is cleared in `finally`, because leaving it set disarms that guard.
+      toast.error(fa.common.saveFailed)
+    } finally {
+      setSaving(false)
     }
-    setDirty(false)
-    toast.success(fa.common.saved)
-    router.push(`/receipts/${result.id}`)
   }
 
   return (

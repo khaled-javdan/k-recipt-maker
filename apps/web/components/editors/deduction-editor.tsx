@@ -185,34 +185,42 @@ export function DeductionEditor({
 
   const submit = async () => {
     setSaving(true)
-    const result = await onSave({
-      title,
-      date,
-      basketCount,
-      commission,
-      commissionIsPercent,
-      notes,
-      items: items.map((i) =>
-        isMan
-          ? {
-              name: i.name,
-              weight: parseNumber(i.weight),
-              pricePerMan: parseNumber(i.ratePerMan),
-            }
-          : { name: i.name, price: parseNumber(i.price) }
-      ),
-      expenses: expenses.map((e) => ({ label: e.label, amount: parseNumber(e.amount) })),
-    })
-    setSaving(false)
+    try {
+      const result = await onSave({
+        title,
+        date,
+        basketCount,
+        commission,
+        commissionIsPercent,
+        notes,
+        items: items.map((i) =>
+          isMan
+            ? {
+                name: i.name,
+                weight: parseNumber(i.weight),
+                pricePerMan: parseNumber(i.ratePerMan),
+              }
+            : { name: i.name, price: parseNumber(i.price) }
+        ),
+        expenses: expenses.map((e) => ({ label: e.label, amount: parseNumber(e.amount) })),
+      })
 
-    if (result.error) {
-      toast.error(result.error)
-      return
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      setDirty(false)
+      toast.success(fa.common.saved)
+      router.push(`${isMan ? "/manreceipts" : "/pricelists"}/${result.id}`)
+    } catch {
+      // A dropped connection must not pass for a save. The document stays
+      // dirty so the unsaved-changes guard keeps protecting it — and `saving`
+      // is cleared in `finally`, because leaving it set disarms that guard.
+      toast.error(fa.common.saveFailed)
+    } finally {
+      setSaving(false)
     }
-
-    setDirty(false)
-    toast.success(fa.common.saved)
-    router.push(`${isMan ? "/manreceipts" : "/pricelists"}/${result.id}`)
   }
 
   const summary = [

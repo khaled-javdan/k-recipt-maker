@@ -102,27 +102,35 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
 
   const submit = async () => {
     setSaving(true)
-    const result = await saveLedger(ledger?.id ?? null, {
-      title,
-      date,
-      notes,
-      rows: rows.map((r) => ({
-        name: r.name,
-        date: r.date || null,
-        invoice: parseNumber(r.invoice),
-        commission: parseNumber(r.commission),
-        cash: parseNumber(r.cash),
-      })),
-    })
-    setSaving(false)
+    try {
+      const result = await saveLedger(ledger?.id ?? null, {
+        title,
+        date,
+        notes,
+        rows: rows.map((r) => ({
+          name: r.name,
+          date: r.date || null,
+          invoice: parseNumber(r.invoice),
+          commission: parseNumber(r.commission),
+          cash: parseNumber(r.cash),
+        })),
+      })
 
-    if (result.error) {
-      toast.error(result.error)
-      return
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      setDirty(false)
+      toast.success(fa.common.saved)
+      router.push(`/ledgers/${result.id}`)
+    } catch {
+      // A dropped connection must not pass for a save. The document stays
+      // dirty so the unsaved-changes guard keeps protecting it — and `saving`
+      // is cleared in `finally`, because leaving it set disarms that guard.
+      toast.error(fa.common.saveFailed)
+    } finally {
+      setSaving(false)
     }
-    setDirty(false)
-    toast.success(fa.common.saved)
-    router.push(`/ledgers/${result.id}`)
   }
 
   return (
