@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -44,6 +44,7 @@ import { EditorShell } from "./editor-shell"
 import { ItemNameInput } from "./item-name-input"
 import { NumberInput } from "./number-input"
 import { RowActions } from "./row-actions"
+import { useDraft } from "./use-draft"
 import { useUnsavedGuard } from "./use-unsaved-guard"
 
 // فیش مزاد and فیش من are the same document with a different way of pricing a
@@ -151,6 +152,42 @@ export function DeductionEditor({
   const [dirty, setDirty] = useState(false)
   useUnsavedGuard(dirty && !saving)
 
+  // Mirrored locally so a failed save does not take the document with it. The
+  // key separates فیش مزاد from فیش من, which share this editor.
+  const draft = useDraft(
+    `${isMan ? "manreceipt" : "pricelist"}:${document?.id ?? "new"}`,
+    { title, date, basketCount, commission, commissionIsPercent, notes, items, expenses },
+    dirty
+  )
+
+  useEffect(() => {
+    if (!draft.found) return
+    const recovered = draft.found
+    const id = toast.info(fa.editor.draftFound, {
+      duration: Infinity,
+      action: {
+        label: fa.editor.draftRestore,
+        onClick: () => {
+          setTitle(recovered.title)
+          setDate(recovered.date)
+          setBasketCount(recovered.basketCount)
+          setCommission(recovered.commission)
+          setCommissionIsPercent(recovered.commissionIsPercent)
+          setNotes(recovered.notes)
+          setItems(recovered.items)
+          setExpenses(recovered.expenses)
+          setDirty(true)
+          draft.dismiss()
+          toast.success(fa.editor.draftRestored)
+        },
+      },
+      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+    })
+    return () => {
+      toast.dismiss(id)
+    }
+  }, [draft])
+
   const touch = () => setDirty(true)
 
   // Totals recompute from the drafts on every keystroke, so the sticky bar is
@@ -211,6 +248,7 @@ export function DeductionEditor({
       }
 
       setDirty(false)
+      draft.clear()
       toast.success(fa.common.saved)
       router.push(`${isMan ? "/manreceipts" : "/pricelists"}/${result.id}`)
     } catch {

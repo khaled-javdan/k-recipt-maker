@@ -22,6 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@workspace/ui/components/sidebar"
 
 import { fa } from "@/lib/fa"
@@ -51,6 +52,14 @@ export function AppSidebar({
   logoUrl: string | null
 }) {
   const pathname = usePathname()
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  // On a phone the sidebar is a drawer covering the page, so following a link
+  // has to dismiss it — otherwise the destination is behind the drawer and it
+  // takes a second tap to see where you just went.
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false)
+  }
 
   // A document's own pages (/receipts/new, /receipts/:id) keep its nav item
   // highlighted, but /pricelists must not light up for /pricelists/catalog's
@@ -86,7 +95,7 @@ export function AppSidebar({
               {DOCUMENTS.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
-                    render={<Link href={item.href} />}
+                    render={<Link href={item.href} onClick={closeOnMobile} />}
                     isActive={isActive(item.href)}
                     tooltip={item.label}
                   >
@@ -106,7 +115,7 @@ export function AppSidebar({
               {REFERENCE.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
-                    render={<Link href={item.href} />}
+                    render={<Link href={item.href} onClick={closeOnMobile} />}
                     isActive={isActive(item.href)}
                     tooltip={item.label}
                   >

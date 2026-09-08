@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -38,6 +38,7 @@ import {
 import { EditorShell } from "./editor-shell"
 import { NumberInput } from "./number-input"
 import { RowActions } from "./row-actions"
+import { useDraft } from "./use-draft"
 import { useUnsavedGuard } from "./use-unsaved-guard"
 
 // حساب — the account sheet. مانده is cumulative down the page, so the editor
@@ -86,6 +87,37 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
   const [dirty, setDirty] = useState(false)
   useUnsavedGuard(dirty && !saving)
 
+  // Mirrored locally so a failed save does not take the document with it.
+  const draft = useDraft(
+    `ledger:${ledger?.id ?? "new"}`,
+    { title, date, notes, rows },
+    dirty
+  )
+
+  useEffect(() => {
+    if (!draft.found) return
+    const recovered = draft.found
+    const id = toast.info(fa.editor.draftFound, {
+      duration: Infinity,
+      action: {
+        label: fa.editor.draftRestore,
+        onClick: () => {
+          setTitle(recovered.title)
+          setDate(recovered.date)
+          setNotes(recovered.notes)
+          setRows(recovered.rows)
+          setDirty(true)
+          draft.dismiss()
+          toast.success(fa.editor.draftRestored)
+        },
+      },
+      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+    })
+    return () => {
+      toast.dismiss(id)
+    }
+  }, [draft])
+
   const touch = () => setDirty(true)
 
   const amounts = rows.map((r) => ({
@@ -121,6 +153,7 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
         return
       }
       setDirty(false)
+      draft.clear()
       toast.success(fa.common.saved)
       router.push(`/ledgers/${result.id}`)
     } catch {

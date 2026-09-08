@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -39,6 +39,7 @@ import {
 import { EditorShell } from "./editor-shell"
 import { NumberInput } from "./number-input"
 import { RowActions } from "./row-actions"
+import { useDraft } from "./use-draft"
 import { useUnsavedGuard } from "./use-unsaved-guard"
 
 // فیش — what left the floor, by count and weight. No money anywhere on it.
@@ -99,6 +100,38 @@ export function ReceiptEditor({
   const [dirty, setDirty] = useState(false)
   useUnsavedGuard(dirty && !saving)
 
+  // Mirrored locally so a failed save — or a tab closed before one — does not
+  // take the document with it.
+  const draft = useDraft(
+    `receipt:${receipt?.id ?? "new"}`,
+    { clientId, date, notes, items },
+    dirty
+  )
+
+  useEffect(() => {
+    if (!draft.found) return
+    const recovered = draft.found
+    const id = toast.info(fa.editor.draftFound, {
+      duration: Infinity,
+      action: {
+        label: fa.editor.draftRestore,
+        onClick: () => {
+          setClientId(recovered.clientId)
+          setDate(recovered.date)
+          setNotes(recovered.notes)
+          setItems(recovered.items)
+          setDirty(true)
+          draft.dismiss()
+          toast.success(fa.editor.draftRestored)
+        },
+      },
+      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+    })
+    return () => {
+      toast.dismiss(id)
+    }
+  }, [draft])
+
   const touch = () => setDirty(true)
 
   // A line's weight is its count times the unit weight — derived, never typed,
@@ -153,6 +186,7 @@ export function ReceiptEditor({
         return
       }
       setDirty(false)
+      draft.clear()
       toast.success(fa.common.saved)
       router.push(`/receipts/${result.id}`)
     } catch {
