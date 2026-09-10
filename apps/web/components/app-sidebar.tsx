@@ -25,7 +25,8 @@ import {
   useSidebar,
 } from "@workspace/ui/components/sidebar"
 
-import { useT } from "@/components/i18n-provider"
+import { useLocale, useT } from "@/components/i18n-provider"
+import { localeDir } from "@/lib/i18n"
 
 // The old app crammed seven destinations into a horizontally scrolling strip.
 // A sidebar shows all of them at once on desktop and collapses to a drawer on
@@ -57,6 +58,7 @@ export function AppSidebar({
 
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
+  const locale = useLocale()
 
   // On a phone the sidebar is a drawer covering the page, so following a link
   // has to dismiss it — otherwise the destination is behind the drawer and it
@@ -72,7 +74,7 @@ export function AppSidebar({
     pathname === href || pathname.startsWith(`${href}/`)
 
   return (
-    <Sidebar side="right" collapsible="icon">
+    <Sidebar side={localeDir(locale) === "rtl" ? "right" : "left"} collapsible="icon">
       <SidebarHeader>
         {/* The logo has to survive the collapsed rail, where the name is
             hidden and the icon-sized square is all that is left. */}

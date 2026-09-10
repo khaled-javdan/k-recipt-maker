@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { faIR } from "date-fns/locale"
+import { arSA, enUS, faIR } from "date-fns/locale"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Calendar03Icon } from "@hugeicons/core-free-icons"
 import { Calendar } from "@workspace/ui/components/calendar"
@@ -12,7 +12,8 @@ import {
 } from "@workspace/ui/components/popover"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { useT } from "@/components/i18n-provider"
+import { useLocale, useT } from "@/components/i18n-provider"
+import { localeDir, type Locale } from "@/lib/i18n"
 import { formatSheetDate } from "./sheets/sheet"
 
 // Dates are stored as ISO yyyy-mm-dd, the same shape the old <input type="date">
@@ -22,6 +23,14 @@ import { formatSheetDate } from "./sheets/sheet"
 // `new Date("2026-08-31")` parses as UTC midnight and reads back as the 30th
 // for anyone west of Greenwich, and `toISOString()` has the mirror bug going
 // the other way — the same trap formatSheetDate() documents.
+// The calendar names its own months and weekdays, so it needs the matching
+// date-fns locale — an English speaker should not be reading فروردین.
+const CALENDAR_LOCALES = { fa: faIR, ar: arSA, en: enUS }
+
+function calendarLocale(locale: Locale) {
+  return CALENDAR_LOCALES[locale]
+}
+
 function parseIsoDate(iso: string): Date | undefined {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
   if (!m) return undefined
@@ -50,6 +59,7 @@ export function DatePicker({
   disabled?: boolean
 }) {
   const t = useT()
+  const locale = useLocale()
 
   const [open, setOpen] = useState(false)
   const selected = parseIsoDate(value)
@@ -89,8 +99,8 @@ export function DatePicker({
             onValueChange(date ? toIsoDate(date) : "")
             setOpen(false)
           }}
-          locale={faIR}
-          dir="rtl"
+          locale={calendarLocale(locale)}
+          dir={localeDir(locale)}
           autoFocus
         />
       </PopoverContent>

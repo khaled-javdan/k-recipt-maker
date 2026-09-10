@@ -223,8 +223,9 @@ export function SheetHeader({
         )}
       </div>
 
-      {/* The sheet is RTL, so its own details sit flush left. */}
-      <div style={{ textAlign: "left" }}>
+      {/* The details sit flush against the edge opposite the headline, which
+          is the left in Farsi and Arabic and the right in English. */}
+      <div style={{ textAlign: "end" }}>
         <div style={labelStyle}>{label}</div>
         <div
           style={{
