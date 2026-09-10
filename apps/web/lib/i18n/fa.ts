@@ -1,9 +1,13 @@
-// The app speaks Farsi and only Farsi. This replaces the old app's
-// three-language switcher: one flat object, no provider, no context, no
-// runtime lookup — just an import.
+// Farsi is the reference dictionary: it is the language the app was written in
+// and the one the client works in, so `Dictionary` is derived from its shape
+// and the other two must match it key for key or fail to compile.
+//
+// Deliberately not `as const` — the other dictionaries hold different strings,
+// so the type has to be `string`, not each Farsi literal.
 
 export const fa = {
   appName: "فاکتور ساز",
+  meta: { description: "مدیریت فاکتور، حساب، فیش مزاد و فیش من" },
 
   auth: {
     signIn: "ورود",
@@ -64,6 +68,7 @@ export const fa = {
     toggleSidebar: "نمایش/پنهان کردن منو",
     narrowLayout: "چیدمان فشرده",
     expandLayout: "چیدمان تمام‌عرض",
+    language: "زبان",
     theme: "ظاهر",
     light: "روشن",
     dark: "تیره",
@@ -271,6 +276,17 @@ export const fa = {
     sessions: "نشست‌ها",
   },
 
+  // Shown by the installed app: the update toast, and the page the service
+  // worker falls back to when a navigation finds no network.
+  pwa: {
+    description: "ساخت و مدیریت فیش، حساب، فیش مزاد و فیش من",
+    updateAvailable: "نسخه جدیدی در دسترس است",
+    reload: "بارگذاری مجدد",
+    offlineTitle: "اتصال اینترنت برقرار نیست",
+    offlineBody:
+      "برای دیدن و ذخیره فیش‌ها به اینترنت نیاز است. پس از برقراری اتصال دوباره تلاش کنید.",
+  },
+
   common: {
     name: "نام",
     phone: "تلفن",
@@ -292,6 +308,7 @@ export const fa = {
     number: "شماره",
     items: "اقلام",
   },
-} as const
+}
 
-export type Fa = typeof fa
+/** The shape every dictionary must fill. */
+export type Dictionary = typeof fa

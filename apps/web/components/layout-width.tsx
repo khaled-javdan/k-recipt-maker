@@ -9,7 +9,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // Wide screens stretch a receipt's rows across the whole monitor, which makes
 // the table hard to read — so the content is capped by default and the toggle
@@ -62,6 +62,8 @@ export function LayoutWidthProvider({
 
 /** Hidden on phones, where the content is already as narrow as it gets. */
 export function LayoutWidthToggle() {
+  const t = useT()
+
   const { width, toggleWidth } = useLayoutWidth()
   const isNarrow = width === "narrow"
 
@@ -71,7 +73,7 @@ export function LayoutWidthToggle() {
       size="icon-sm"
       className="hidden md:inline-flex"
       aria-pressed={isNarrow}
-      aria-label={isNarrow ? fa.shell.expandLayout : fa.shell.narrowLayout}
+      aria-label={isNarrow ? t.shell.expandLayout : t.shell.narrowLayout}
       onClick={toggleWidth}
     >
       <HugeiconsIcon icon={isNarrow ? ArrowExpand02Icon : ArrowShrink02Icon} />

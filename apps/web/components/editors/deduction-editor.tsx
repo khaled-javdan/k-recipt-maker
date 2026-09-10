@@ -30,7 +30,7 @@ import {
   snapPriceInput,
 } from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import { insertAt, moveRow, removeAt, replaceAt } from "@/lib/rows"
 import type { CatalogItem, ManReceipt, PriceList } from "@/lib/types"
 
@@ -99,6 +99,8 @@ export function DeductionEditor({
     expenses: { label: string; amount: number }[]
   }) => Promise<{ id?: string; error?: string }>
 }) {
+  const t = useT()
+
   const router = useRouter()
   const isMan = kind === "MAN"
 
@@ -163,10 +165,10 @@ export function DeductionEditor({
   useEffect(() => {
     if (!draft.found) return
     const recovered = draft.found
-    const id = toast.info(fa.editor.draftFound, {
+    const id = toast.info(t.editor.draftFound, {
       duration: Infinity,
       action: {
-        label: fa.editor.draftRestore,
+        label: t.editor.draftRestore,
         onClick: () => {
           setTitle(recovered.title)
           setDate(recovered.date)
@@ -178,10 +180,10 @@ export function DeductionEditor({
           setExpenses(recovered.expenses)
           setDirty(true)
           draft.dismiss()
-          toast.success(fa.editor.draftRestored)
+          toast.success(t.editor.draftRestored)
         },
       },
-      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+      cancel: { label: t.editor.draftDiscard, onClick: () => draft.clear() },
     })
     return () => {
       toast.dismiss(id)
@@ -249,27 +251,27 @@ export function DeductionEditor({
 
       setDirty(false)
       draft.clear()
-      toast.success(fa.common.saved)
+      toast.success(t.common.saved)
       router.push(`${isMan ? "/manreceipts" : "/pricelists"}/${result.id}`)
     } catch {
       // A dropped connection must not pass for a save. The document stays
       // dirty so the unsaved-changes guard keeps protecting it — and `saving`
       // is cleared in `finally`, because leaving it set disarms that guard.
-      toast.error(fa.common.saveFailed)
+      toast.error(t.common.saveFailed)
     } finally {
       setSaving(false)
     }
   }
 
   const summary = [
-    { label: fa.sheets.itemsCount, value: String(items.length) },
+    { label: t.sheets.itemsCount, value: String(items.length) },
     ...(isMan
-      ? [{ label: fa.sheets.totalWeight, value: formatTotalWeight(totalWeight) }]
+      ? [{ label: t.sheets.totalWeight, value: formatTotalWeight(totalWeight) }]
       : []),
-    { label: fa.sheets.subtotal, value: formatAmount(totals.subtotal) },
-    { label: fa.sheets.commission, value: formatAmount(totals.commission) },
-    { label: fa.sheets.expenses, value: formatAmount(totals.expenses) },
-    { label: fa.sheets.grandTotal, value: formatMoney(totals.grandTotal), strong: true },
+    { label: t.sheets.subtotal, value: formatAmount(totals.subtotal) },
+    { label: t.sheets.commission, value: formatAmount(totals.commission) },
+    { label: t.sheets.expenses, value: formatAmount(totals.expenses) },
+    { label: t.sheets.grandTotal, value: formatMoney(totals.grandTotal), strong: true },
   ]
 
   return (
@@ -282,11 +284,11 @@ export function DeductionEditor({
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="title">{fa.editor.title}</Label>
+            <Label htmlFor="title">{t.editor.title}</Label>
             <Input
               id="title"
               value={title}
-              placeholder={fa.editor.titlePlaceholder}
+              placeholder={t.editor.titlePlaceholder}
               onChange={(e) => {
                 setTitle(e.target.value)
                 touch()
@@ -295,7 +297,7 @@ export function DeductionEditor({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="date">{fa.common.date}</Label>
+            <Label htmlFor="date">{t.common.date}</Label>
             <DatePicker
               id="date"
               value={date}
@@ -307,7 +309,7 @@ export function DeductionEditor({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="basket">{fa.sheets.basketCount}</Label>
+            <Label htmlFor="basket">{t.sheets.basketCount}</Label>
             <NumberInput
               id="basket"
               value={basketCount}
@@ -322,7 +324,7 @@ export function DeductionEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.sheets.item}</CardTitle>
+          <CardTitle>{t.sheets.item}</CardTitle>
         </CardHeader>
         <CardContent>
           <EditorTable
@@ -343,17 +345,17 @@ export function DeductionEditor({
                 isMan
                   ? [
                       null,
-                      fa.sheets.item,
-                      fa.sheets.weightKg,
-                      fa.sheets.pricePerMan,
-                      { label: fa.sheets.amount, align: "end" as const },
+                      t.sheets.item,
+                      t.sheets.weightKg,
+                      t.sheets.pricePerMan,
+                      { label: t.sheets.amount, align: "end" as const },
                       null,
                     ]
                   : [
                       null,
-                      fa.sheets.item,
-                      fa.sheets.price,
-                      { label: fa.sheets.amount, align: "end" as const },
+                      t.sheets.item,
+                      t.sheets.price,
+                      { label: t.sheets.amount, align: "end" as const },
                       null,
                     ]
               }
@@ -388,12 +390,12 @@ export function DeductionEditor({
                   <>
                     <NumberInput
                       value={item.weight}
-                      aria-label={fa.sheets.weightKg}
+                      aria-label={t.sheets.weightKg}
                       onValueChange={(v) => updateItem(index, { weight: v })}
                     />
                     <NumberInput
                       value={item.ratePerMan}
-                      aria-label={fa.sheets.pricePerMan}
+                      aria-label={t.sheets.pricePerMan}
                       onValueChange={(v) => updateItem(index, { ratePerMan: v })}
                       onBlurValue={(v) =>
                         updateItem(index, { ratePerMan: roundMoneyInput(v) })
@@ -403,7 +405,7 @@ export function DeductionEditor({
                 ) : (
                   <NumberInput
                     value={item.price}
-                    aria-label={fa.sheets.price}
+                    aria-label={t.sheets.price}
                     onValueChange={(v) => updateItem(index, { price: v })}
                     // Prices settle in multiples of five — snapped on blur so
                     // typing "57" isn't fought keystroke by keystroke.
@@ -453,14 +455,14 @@ export function DeductionEditor({
             onClick={appendItem}
           >
             <HugeiconsIcon icon={Add01Icon} />
-            {fa.actions.addRow}
+            {t.actions.addRow}
           </Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.sheets.commission}</CardTitle>
+          <CardTitle>{t.sheets.commission}</CardTitle>
           <CardAction>
             <div className="flex items-center gap-2">
               <Switch
@@ -472,7 +474,7 @@ export function DeductionEditor({
                 }}
               />
               <Label htmlFor="isPercent" className="text-sm font-normal">
-                {fa.editor.commissionAsPercent}
+                {t.editor.commissionAsPercent}
               </Label>
             </div>
           </CardAction>
@@ -482,8 +484,8 @@ export function DeductionEditor({
             <div className="grid w-40 gap-2">
               <Label htmlFor="commission">
                 {commissionIsPercent
-                  ? fa.editor.commissionPercent
-                  : fa.editor.commissionFlat}
+                  ? t.editor.commissionPercent
+                  : t.editor.commissionFlat}
               </Label>
               <NumberInput
                 id="commission"
@@ -513,11 +515,11 @@ export function DeductionEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.sheets.expenses}</CardTitle>
+          <CardTitle>{t.sheets.expenses}</CardTitle>
         </CardHeader>
         <CardContent>
           {expenses.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{fa.editor.noExpenses}</p>
+            <p className="text-muted-foreground text-sm">{t.editor.noExpenses}</p>
           ) : (
             <EditorTable
               template="2rem minmax(10rem,1fr) 8rem 2.25rem"
@@ -529,13 +531,13 @@ export function DeductionEditor({
               }}
             >
               <EditorHead
-                labels={[null, fa.editor.expenseLabel, fa.editor.expenseAmount, null]}
+                labels={[null, t.editor.expenseLabel, t.editor.expenseAmount, null]}
               />
               {expenses.map((expense, index) => (
                 <EditorRow key={expense.key} id={expense.key} index={index}>
                   <Input
                     value={expense.label}
-                    aria-label={fa.editor.expenseLabel}
+                    aria-label={t.editor.expenseLabel}
                     onChange={(e) => {
                       setExpenses((r) =>
                         replaceAt(r, index, { ...r[index]!, label: e.target.value })
@@ -545,7 +547,7 @@ export function DeductionEditor({
                   />
                   <NumberInput
                     value={expense.amount}
-                    aria-label={fa.editor.expenseAmount}
+                    aria-label={t.editor.expenseAmount}
                     onValueChange={(v) => {
                       setExpenses((r) => replaceAt(r, index, { ...r[index]!, amount: v }))
                       touch()
@@ -560,7 +562,7 @@ export function DeductionEditor({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={fa.actions.remove}
+                    aria-label={t.actions.remove}
                     onClick={() => {
                       setExpenses((r) => removeAt(r, index))
                       touch()
@@ -584,14 +586,14 @@ export function DeductionEditor({
             }}
           >
             <HugeiconsIcon icon={Add01Icon} />
-            {fa.editor.addExpense}
+            {t.editor.addExpense}
           </Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.common.notes}</CardTitle>
+          <CardTitle>{t.common.notes}</CardTitle>
         </CardHeader>
         <CardContent>
           <Textarea
@@ -615,8 +617,10 @@ function today(): string {
 }
 
 function editorTitle(kind: DeductionKind, editing: boolean): string {
+  const t = useT()
+
   if (kind === "MAN") {
-    return editing ? fa.editor.editManReceipt : fa.editor.newManReceipt
+    return editing ? t.editor.editManReceipt : t.editor.newManReceipt
   }
-  return editing ? fa.editor.editPriceList : fa.editor.newPriceList
+  return editing ? t.editor.editPriceList : t.editor.newPriceList
 }

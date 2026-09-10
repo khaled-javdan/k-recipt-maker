@@ -19,7 +19,7 @@ import { cn } from "@workspace/ui/lib/utils"
 
 import { deleteProduct, saveProduct } from "@/actions/reference"
 import { formatUnitWeight, toLatinDigits } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { Product } from "@/lib/types"
 
 // The colour is a physical marker on the crate, so the palette is a fixed set
@@ -32,6 +32,8 @@ const SWATCHES = [
 ]
 
 export function ProductsManager({ products }: { products: Product[] }) {
+  const t = useT()
+
   const router = useRouter()
   const [editing, setEditing] = useState<Product | null>(null)
   const [open, setOpen] = useState(false)
@@ -61,23 +63,23 @@ export function ProductsManager({ products }: { products: Product[] }) {
       return
     }
     setOpen(false)
-    toast.success(fa.common.saved)
+    toast.success(t.common.saved)
     router.refresh()
   }
 
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{fa.products.title}</h1>
+        <h1 className="text-xl font-semibold">{t.products.title}</h1>
         <Button onClick={openNew}>
           <HugeiconsIcon icon={Add01Icon} />
-          {fa.products.new}
+          {t.products.new}
         </Button>
       </div>
 
       {products.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border border-dashed p-10 text-center">
-          {fa.products.empty}
+          {t.products.empty}
         </p>
       ) : (
         <ul className="grid gap-2">
@@ -99,7 +101,7 @@ export function ProductsManager({ products }: { products: Product[] }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.edit}
+                aria-label={t.actions.edit}
                 onClick={() => openEdit(product)}
               >
                 <HugeiconsIcon icon={Edit02Icon} />
@@ -107,10 +109,10 @@ export function ProductsManager({ products }: { products: Product[] }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.delete}
+                aria-label={t.actions.delete}
                 onClick={async () => {
                   await deleteProduct(product.id)
-                  toast.success(fa.common.deleted)
+                  toast.success(t.common.deleted)
                   router.refresh()
                 }}
               >
@@ -124,17 +126,17 @@ export function ProductsManager({ products }: { products: Product[] }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? fa.products.edit : fa.products.new}</DialogTitle>
+            <DialogTitle>{editing ? t.products.edit : t.products.new}</DialogTitle>
           </DialogHeader>
 
           <form action={submit} key={editing?.id ?? "new"} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">{fa.common.name}</Label>
+              <Label htmlFor="name">{t.common.name}</Label>
               <Input id="name" name="name" defaultValue={editing?.name ?? ""} required />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="colorName">{fa.products.colorName}</Label>
+              <Label htmlFor="colorName">{t.products.colorName}</Label>
               <Input
                 id="colorName"
                 name="colorName"
@@ -143,7 +145,7 @@ export function ProductsManager({ products }: { products: Product[] }) {
             </div>
 
             <div className="grid gap-2">
-              <Label>{fa.products.colorHex}</Label>
+              <Label>{t.products.colorHex}</Label>
               <div className="flex flex-wrap gap-2">
                 {SWATCHES.map((swatch) => (
                   <button
@@ -169,7 +171,7 @@ export function ProductsManager({ products }: { products: Product[] }) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="unitWeight">{fa.products.unitWeight}</Label>
+              <Label htmlFor="unitWeight">{t.products.unitWeight}</Label>
               <Input
                 id="unitWeight"
                 name="unitWeight"
@@ -181,7 +183,7 @@ export function ProductsManager({ products }: { products: Product[] }) {
 
             <DialogFooter>
               <Button type="submit" disabled={saving}>
-                {saving ? fa.editor.saving : fa.actions.save}
+                {saving ? t.editor.saving : t.actions.save}
               </Button>
             </DialogFooter>
           </form>

@@ -1,3 +1,5 @@
+"use client"
+
 import type { Ref } from "react"
 
 import {
@@ -7,7 +9,7 @@ import {
   manLineAmount,
   manReceiptTotals,
 } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { ManReceipt, Settings } from "@/lib/types"
 
 import { DeductionFooter, TotalLine, commissionLabel } from "./deduction-sheet"
@@ -32,6 +34,8 @@ export function ManReceiptSheet({
   manReceipt: ManReceipt
   settings: Settings
 }) {
+  const t = useT()
+
   const { primaryColor, accentColor } = settings
 
   const totals = manReceiptTotals({
@@ -43,22 +47,22 @@ export function ManReceiptSheet({
 
   type Row = ManReceipt["items"][number]
   const columns: SheetColumn<Row>[] = [
-    { key: "name", label: fa.sheets.item, strong: true, render: (i) => i.name },
+    { key: "name", label: t.sheets.item, strong: true, render: (i) => i.name },
     {
       key: "weight",
-      label: fa.sheets.weightKg,
+      label: t.sheets.weightKg,
       numeric: true,
       render: (i) => formatUnitWeight(i.weight),
     },
     {
       key: "rate",
-      label: fa.sheets.pricePerMan,
+      label: t.sheets.pricePerMan,
       numeric: true,
       render: (i) => formatAmount(i.pricePerMan),
     },
     {
       key: "amount",
-      label: fa.sheets.amount,
+      label: t.sheets.amount,
       numeric: true,
       cellStyle: { fontWeight: 600 },
       render: (i) => formatAmount(manLineAmount(i)),
@@ -76,12 +80,12 @@ export function ManReceiptSheet({
         icon="manReceipt"
         primaryColor={primaryColor}
         accentColor={accentColor}
-        label={fa.sheets.listTitleLabel}
+        label={t.sheets.listTitleLabel}
         value={manReceipt.title || `#${manReceipt.number}`}
         date={formatSheetDate(manReceipt.date)}
         subline={
           manReceipt.basketCount
-            ? `${fa.sheets.basketCount} : ${manReceipt.basketCount}`
+            ? `${t.sheets.basketCount} : ${manReceipt.basketCount}`
             : null
         }
       />
@@ -97,7 +101,7 @@ export function ManReceiptSheet({
         footer={
           <tr>
             <td style={footerCell({ fontWeight: 600, padding: footerPadding })}>
-              {fa.common.total}
+              {t.common.total}
             </td>
             <td
               style={footerCell({
@@ -131,7 +135,7 @@ export function ManReceiptSheet({
         expensesTotal={totals.expenses}
         subtotal={totals.subtotal}
         commission={totals.commission}
-        commissionLabel={commissionLabel(
+        commissionLabel={commissionLabel(t, 
           manReceipt.commission,
           manReceipt.commissionIsPercent
         )}
@@ -140,7 +144,7 @@ export function ManReceiptSheet({
         accentColor={accentColor}
         leadingTotal={
           <TotalLine
-            label={fa.sheets.totalWeight}
+            label={t.sheets.totalWeight}
             value={formatTotalWeight(totals.totalWeight)}
           />
         }

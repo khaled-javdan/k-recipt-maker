@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities"
 
 import { cn } from "@workspace/ui/lib/utils"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // The editors are spreadsheets, not stacks of forms. Every row shares one grid
 // template so columns line up down the page, the header is written once
@@ -133,6 +133,8 @@ export function EditorRow({
   className?: string
   children: ReactNode
 }) {
+  const t = useT()
+
   const {
     attributes,
     listeners,
@@ -168,8 +170,8 @@ export function EditorRow({
       <button
         ref={setActivatorNodeRef}
         type="button"
-        aria-label={`${fa.actions.dragRow} ${index + 1}`}
-        title={fa.dragHintTitle}
+        aria-label={`${t.actions.dragRow} ${index + 1}`}
+        title={t.dragHintTitle}
         {...attributes}
         {...listeners}
         className={cn(

@@ -5,7 +5,7 @@ import { del, put } from "@vercel/blob"
 import { prisma } from "@workspace/db"
 
 import { requireUser } from "@/lib/dal"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 import {
   ledgerColumnsSchema,
   priceListConfigSchema,
@@ -91,16 +91,18 @@ async function deleteLogoBlob(url: string | null | undefined) {
 }
 
 export async function uploadLogo(formData: FormData) {
+  const t = await getT()
+
   const user = await requireUser()
 
   const file = formData.get("logo")
   if (!(file instanceof File) || file.size === 0) {
-    return { error: fa.settings.logoMissing }
+    return { error: t.settings.logoMissing }
   }
-  if (file.size > MAX_LOGO_BYTES) return { error: fa.settings.logoTooLarge }
+  if (file.size > MAX_LOGO_BYTES) return { error: t.settings.logoTooLarge }
 
   const ext = LOGO_TYPES[file.type]
-  if (!ext) return { error: fa.settings.logoBadType }
+  if (!ext) return { error: t.settings.logoBadType }
 
   const previous = await prisma.settings.findUnique({
     where: { userId: user.id },

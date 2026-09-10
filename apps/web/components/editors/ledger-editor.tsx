@@ -25,7 +25,7 @@ import {
   roundMoneyInput,
 } from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import { insertAt, moveRow, removeAt, replaceAt } from "@/lib/rows"
 import type { Ledger } from "@/lib/types"
 
@@ -65,6 +65,8 @@ const emptyRow = (): DraftRow => ({
 })
 
 export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
+  const t = useT()
+
   const router = useRouter()
 
   const [title, setTitle] = useState(ledger?.title ?? "")
@@ -97,10 +99,10 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
   useEffect(() => {
     if (!draft.found) return
     const recovered = draft.found
-    const id = toast.info(fa.editor.draftFound, {
+    const id = toast.info(t.editor.draftFound, {
       duration: Infinity,
       action: {
-        label: fa.editor.draftRestore,
+        label: t.editor.draftRestore,
         onClick: () => {
           setTitle(recovered.title)
           setDate(recovered.date)
@@ -108,10 +110,10 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
           setRows(recovered.rows)
           setDirty(true)
           draft.dismiss()
-          toast.success(fa.editor.draftRestored)
+          toast.success(t.editor.draftRestored)
         },
       },
-      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+      cancel: { label: t.editor.draftDiscard, onClick: () => draft.clear() },
     })
     return () => {
       toast.dismiss(id)
@@ -154,13 +156,13 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
       }
       setDirty(false)
       draft.clear()
-      toast.success(fa.common.saved)
+      toast.success(t.common.saved)
       router.push(`/ledgers/${result.id}`)
     } catch {
       // A dropped connection must not pass for a save. The document stays
       // dirty so the unsaved-changes guard keeps protecting it — and `saving`
       // is cleared in `finally`, because leaving it set disarms that guard.
-      toast.error(fa.common.saveFailed)
+      toast.error(t.common.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -168,22 +170,22 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
 
   return (
     <EditorShell
-      title={ledger ? fa.editor.editLedger : fa.editor.newLedger}
+      title={ledger ? t.editor.editLedger : t.editor.newLedger}
       saving={saving}
       onSave={submit}
       summary={[
-        { label: fa.common.items, value: String(rows.length) },
-        { label: fa.sheets.balance, value: formatAmount(grandTotal), strong: true },
+        { label: t.common.items, value: String(rows.length) },
+        { label: t.sheets.balance, value: formatAmount(grandTotal), strong: true },
       ]}
     >
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="title">{fa.editor.title}</Label>
+            <Label htmlFor="title">{t.editor.title}</Label>
             <Input
               id="title"
               value={title}
-              placeholder={fa.editor.titlePlaceholder}
+              placeholder={t.editor.titlePlaceholder}
               onChange={(e) => {
                 setTitle(e.target.value)
                 touch()
@@ -191,7 +193,7 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="date">{fa.common.date}</Label>
+            <Label htmlFor="date">{t.common.date}</Label>
             <DatePicker
               id="date"
               value={date}
@@ -206,7 +208,7 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.nav.ledgers}</CardTitle>
+          <CardTitle>{t.nav.ledgers}</CardTitle>
         </CardHeader>
         <CardContent>
           <EditorTable
@@ -221,12 +223,12 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
             <EditorHead
               labels={[
                 null,
-                fa.common.name,
-                fa.sheets.invoice,
-                fa.sheets.commission,
-                fa.sheets.cash,
-                fa.common.date,
-                { label: fa.sheets.balance, align: "end" as const },
+                t.common.name,
+                t.sheets.invoice,
+                t.sheets.commission,
+                t.sheets.cash,
+                t.common.date,
+                { label: t.sheets.balance, align: "end" as const },
                 null,
               ]}
             />
@@ -243,24 +245,24 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
 
                 <Input
                   value={row.name}
-                  aria-label={fa.common.name}
+                  aria-label={t.common.name}
                   onChange={(e) => update(index, { name: e.target.value })}
                 />
                 <NumberInput
                   value={row.invoice}
-                  aria-label={fa.sheets.invoice}
+                  aria-label={t.sheets.invoice}
                   onValueChange={(v) => update(index, { invoice: v })}
                   onBlurValue={(v) => update(index, { invoice: roundMoneyInput(v) })}
                 />
                 <NumberInput
                   value={row.commission}
-                  aria-label={fa.sheets.commission}
+                  aria-label={t.sheets.commission}
                   onValueChange={(v) => update(index, { commission: v })}
                   onBlurValue={(v) => update(index, { commission: roundMoneyInput(v) })}
                 />
                 <NumberInput
                   value={row.cash}
-                  aria-label={fa.sheets.cash}
+                  aria-label={t.sheets.cash}
                   onValueChange={(v) => update(index, { cash: v })}
                   onBlurValue={(v) => update(index, { cash: roundMoneyInput(v) })}
                 />
@@ -319,14 +321,14 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
             }}
           >
             <HugeiconsIcon icon={Add01Icon} />
-            {fa.actions.addRow}
+            {t.actions.addRow}
           </Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.common.notes}</CardTitle>
+          <CardTitle>{t.common.notes}</CardTitle>
         </CardHeader>
         <CardContent>
           <Textarea

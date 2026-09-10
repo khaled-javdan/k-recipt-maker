@@ -4,9 +4,14 @@ import { PageHeader } from "@/components/page-header"
 import { bucketDays, resolveRange, toIsoDate } from "@/lib/analytics"
 import { formatMoney, formatTotalWeight, manReceiptTotals } from "@/lib/calc"
 import { getSheetEarnings, listEarningRows, listManReceipts } from "@/lib/data"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.nav.manReceipts} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.nav.manReceipts} — ${t.appName}` }
+}
 
 export default async function ManReceiptsPage({
   searchParams,
@@ -18,6 +23,8 @@ export default async function ManReceiptsPage({
     details?: string
   }>
 }) {
+  const t = await getT()
+
   const params = await searchParams
   // Everything here comes from a URL anyone can edit, so resolveRange() repairs
   // or falls back rather than letting a bad value reach the query.
@@ -42,12 +49,12 @@ export default async function ManReceiptsPage({
     return {
       id: m.id,
       number: m.number,
-      title: m.title || fa.sheets.manReceiptTitle,
+      title: m.title || t.sheets.manReceiptTitle,
       date: m.date,
       meta: [
-        `${fa.common.items}: ${m.items.length}`,
+        `${t.common.items}: ${m.items.length}`,
         formatTotalWeight(totals.totalWeight),
-        `${fa.sheets.commission}: ${formatMoney(totals.commission)}`,
+        `${t.sheets.commission}: ${formatMoney(totals.commission)}`,
       ],
       amount: formatMoney(totals.grandTotal),
     }
@@ -55,12 +62,12 @@ export default async function ManReceiptsPage({
 
   return (
     <>
-      <PageHeader title={fa.nav.manReceipts} />
+      <PageHeader title={t.nav.manReceipts} />
 
       <EarningsPanel
         basePath="/manreceipts"
-        description={fa.earnings.descriptionManReceipts}
-        untitledLabel={fa.sheets.manReceiptTitle}
+        description={t.earnings.descriptionManReceipts}
+        untitledLabel={t.sheets.manReceiptTitle}
         range={range.key}
         from={range.from}
         to={range.to}
@@ -72,7 +79,7 @@ export default async function ManReceiptsPage({
         rows={breakdownRows}
       />
 
-      <DocumentList rows={rows} basePath="/manreceipts" newLabel={fa.actions.new} />
+      <DocumentList rows={rows} basePath="/manreceipts" newLabel={t.actions.new} />
     </>
   )
 }

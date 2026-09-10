@@ -29,7 +29,8 @@ import {
   type RangeKey,
 } from "@/lib/analytics"
 import type { EarningRow } from "@/lib/data"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
+import type { Dictionary } from "@/lib/i18n"
 import { formatSheetDate } from "./sheets/sheet"
 
 // The حق earned across a sheet type — فیش مزاد or فیش من — over a window the
@@ -49,12 +50,14 @@ import { formatSheetDate } from "./sheets/sheet"
 // a range is half-selected.
 type CalendarRange = { from: Date | undefined; to?: Date | undefined }
 
-const PRESET_LABELS: Record<PresetKey, string> = {
-  today: fa.earnings.rangeToday,
-  week: fa.earnings.rangeWeek,
-  month: fa.earnings.rangeMonth,
-  quarter: fa.earnings.rangeQuarter,
-  all: fa.earnings.rangeAll,
+function presetLabels(t: Dictionary): Record<PresetKey, string> {
+  return {
+    today: t.earnings.rangeToday,
+    week: t.earnings.rangeWeek,
+    month: t.earnings.rangeMonth,
+    quarter: t.earnings.rangeQuarter,
+    all: t.earnings.rangeAll,
+  }
 }
 
 export type EarningsPanelProps = {
@@ -116,13 +119,15 @@ export function EarningsPanel({
   buckets,
   rows,
 }: EarningsPanelProps) {
+  const t = useT()
+
   const state: PanelState = { basePath, range, from, to, details: rows !== null }
 
   return (
     <section className="mb-6 rounded-xl border p-4 md:p-5 print:hidden">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">{fa.earnings.title}</h2>
+          <h2 className="font-semibold">{t.earnings.title}</h2>
           <p className="text-muted-foreground text-sm">{description}</p>
         </div>
 
@@ -136,16 +141,16 @@ export function EarningsPanel({
         <div>
           {/* The one figure the panel exists to show. Proportional figures, not
               tabular — at this size tabular digits read loose and gappy. */}
-          <div className="text-muted-foreground text-sm">{fa.earnings.total}</div>
+          <div className="text-muted-foreground text-sm">{t.earnings.total}</div>
           <div dir="ltr" className="mt-0.5 text-start text-4xl font-semibold">
             {formatMoney(total)}
           </div>
           <Delta total={total} previousTotal={previousTotal} />
 
           <dl className="mt-4 grid grid-cols-2 gap-3">
-            <Stat label={fa.earnings.sheets} value={formatAmount(sheetCount)} />
+            <Stat label={t.earnings.sheets} value={formatAmount(sheetCount)} />
             <Stat
-              label={fa.earnings.average}
+              label={t.earnings.average}
               value={formatMoney(Math.round(average))}
             />
           </dl>
@@ -156,7 +161,7 @@ export function EarningsPanel({
               scroll={false}
               className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-3 inline-block rounded text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
             >
-              {state.details ? fa.earnings.hideDetails : fa.earnings.showDetails}
+              {state.details ? t.earnings.hideDetails : t.earnings.showDetails}
             </Link>
           ) : null}
         </div>
@@ -196,6 +201,8 @@ function Delta({
   total: number
   previousTotal: number | null
 }) {
+  const t = useT()
+
   if (previousTotal === null) return null
 
   // Nothing before and nothing now: the chart's empty state already says so,
@@ -203,7 +210,7 @@ function Delta({
   if (previousTotal === 0) {
     if (total === 0) return null
     return (
-      <p className="text-muted-foreground mt-1 text-xs">{fa.earnings.noPrevious}</p>
+      <p className="text-muted-foreground mt-1 text-xs">{t.earnings.noPrevious}</p>
     )
   }
 
@@ -231,16 +238,19 @@ function Delta({
         {up ? "+" : "−"}
         {Math.abs(change)}%
       </span>
-      <span className="text-muted-foreground">{fa.earnings.vsPrevious}</span>
+      <span className="text-muted-foreground">{t.earnings.vsPrevious}</span>
     </p>
   )
 }
 
 function RangeFilter({ state }: { state: PanelState }) {
+  const t = useT()
+  const labels = presetLabels(t)
+
   return (
     <div
       role="group"
-      aria-label={fa.earnings.rangeLabel}
+      aria-label={t.earnings.rangeLabel}
       className="bg-muted/60 flex flex-wrap items-center gap-0.5 rounded-full p-0.5"
     >
       {PRESET_KEYS.map((key) => {
@@ -258,7 +268,7 @@ function RangeFilter({ state }: { state: PanelState }) {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {PRESET_LABELS[key]}
+            {labels[key]}
           </Link>
         )
       })}
@@ -269,6 +279,8 @@ function RangeFilter({ state }: { state: PanelState }) {
 // A calendar range, for the questions the presets don't answer — one market
 // week, a single past month, the stretch either side of a trip.
 function RangePicker({ state }: { state: PanelState }) {
+  const t = useT()
+
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const isCustom = state.range === "custom"
@@ -306,7 +318,7 @@ function RangePicker({ state }: { state: PanelState }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        aria-label={fa.earnings.pickRange}
+        aria-label={t.earnings.pickRange}
         className={cn(
           "focus-visible:ring-ring flex h-8 items-center gap-2 rounded-full border px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none",
           isCustom ? "bg-background font-medium" : "text-muted-foreground hover:text-foreground"
@@ -318,7 +330,7 @@ function RangePicker({ state }: { state: PanelState }) {
             {formatSheetDate(state.from)} – {formatSheetDate(state.to)}
           </span>
         ) : (
-          fa.earnings.rangeCustom
+          t.earnings.rangeCustom
         )}
       </PopoverTrigger>
 
@@ -344,7 +356,7 @@ function RangePicker({ state }: { state: PanelState }) {
             {draft?.to ? formatSheetDate(toIsoDate(draft.to)) : "—"}
           </span>
           <Button size="sm" onClick={apply} disabled={!complete}>
-            {fa.earnings.apply}
+            {t.earnings.apply}
           </Button>
         </div>
       </PopoverContent>
@@ -360,12 +372,14 @@ function RangePicker({ state }: { state: PanelState }) {
 // app — dates, amounts, document numbers — is already forced to LTR, and a time
 // axis running the other way to the dates printed under it reads as a bug.
 function EarningsChart({ buckets }: { buckets: Bucket[] }) {
+  const t = useT()
+
   const [hovered, setHovered] = useState<number | null>(null)
 
   if (buckets.length === 0) {
     return (
       <div className="text-muted-foreground flex min-h-40 items-center justify-center rounded-lg border border-dashed text-sm">
-        {fa.earnings.empty}
+        {t.earnings.empty}
       </div>
     )
   }
@@ -388,7 +402,7 @@ function EarningsChart({ buckets }: { buckets: Bucket[] }) {
           {formatMoney(shown.amount)}
         </span>
         <span className="text-muted-foreground text-xs">
-          {fa.earnings.sheets}: {formatAmount(shown.sheets)}
+          {t.earnings.sheets}: {formatAmount(shown.sheets)}
         </span>
       </figcaption>
 
@@ -457,25 +471,27 @@ function Breakdown({
   basePath: string
   untitledLabel: string
 }) {
+  const t = useT()
+
   return (
     <div className="mt-5 border-t pt-4">
-      <h3 className="mb-2 text-sm font-medium">{fa.earnings.breakdown}</h3>
+      <h3 className="mb-2 text-sm font-medium">{t.earnings.breakdown}</h3>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-muted-foreground text-start text-xs">
               <th className="py-1.5 pe-3 text-start font-normal whitespace-nowrap">
-                {fa.common.number}
+                {t.common.number}
               </th>
               <th className="py-1.5 pe-3 text-start font-normal">
-                {fa.earnings.who}
+                {t.earnings.who}
               </th>
               <th className="py-1.5 pe-3 text-start font-normal whitespace-nowrap">
-                {fa.common.date}
+                {t.common.date}
               </th>
               <th className="py-1.5 text-end font-normal whitespace-nowrap">
-                {fa.sheets.commission}
+                {t.sheets.commission}
               </th>
             </tr>
           </thead>
@@ -512,7 +528,7 @@ function Breakdown({
 
       {rows.length < sheetCount ? (
         <p className="text-muted-foreground mt-2 text-xs">
-          {fa.earnings.rowsTruncated
+          {t.earnings.rowsTruncated
             .replace("{shown}", formatAmount(rows.length))
             .replace("{total}", formatAmount(sheetCount))}
         </p>

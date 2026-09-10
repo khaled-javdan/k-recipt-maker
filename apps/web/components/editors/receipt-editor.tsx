@@ -26,7 +26,7 @@ import { Textarea } from "@workspace/ui/components/textarea"
 import { saveReceipt } from "@/actions/documents"
 import { formatTotalWeight, formatUnitWeight, parseNumber } from "@/lib/calc"
 import { DatePicker } from "@/components/date-picker"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import { insertAt, moveRow, removeAt, replaceAt } from "@/lib/rows"
 import type { Client, Product, Receipt } from "@/lib/types"
 
@@ -77,6 +77,8 @@ export function ReceiptEditor({
   clients: Client[]
   products: Product[]
 }) {
+  const t = useT()
+
   const router = useRouter()
 
   const [clientId, setClientId] = useState(receipt?.clientId ?? NO_CLIENT)
@@ -111,10 +113,10 @@ export function ReceiptEditor({
   useEffect(() => {
     if (!draft.found) return
     const recovered = draft.found
-    const id = toast.info(fa.editor.draftFound, {
+    const id = toast.info(t.editor.draftFound, {
       duration: Infinity,
       action: {
-        label: fa.editor.draftRestore,
+        label: t.editor.draftRestore,
         onClick: () => {
           setClientId(recovered.clientId)
           setDate(recovered.date)
@@ -122,10 +124,10 @@ export function ReceiptEditor({
           setItems(recovered.items)
           setDirty(true)
           draft.dismiss()
-          toast.success(fa.editor.draftRestored)
+          toast.success(t.editor.draftRestored)
         },
       },
-      cancel: { label: fa.editor.draftDiscard, onClick: () => draft.clear() },
+      cancel: { label: t.editor.draftDiscard, onClick: () => draft.clear() },
     })
     return () => {
       toast.dismiss(id)
@@ -187,13 +189,13 @@ export function ReceiptEditor({
       }
       setDirty(false)
       draft.clear()
-      toast.success(fa.common.saved)
+      toast.success(t.common.saved)
       router.push(`/receipts/${result.id}`)
     } catch {
       // A dropped connection must not pass for a save. The document stays
       // dirty so the unsaved-changes guard keeps protecting it — and `saving`
       // is cleared in `finally`, because leaving it set disarms that guard.
-      toast.error(fa.common.saveFailed)
+      toast.error(t.common.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -201,14 +203,14 @@ export function ReceiptEditor({
 
   return (
     <EditorShell
-      title={receipt ? fa.editor.editReceipt : fa.editor.newReceipt}
+      title={receipt ? t.editor.editReceipt : t.editor.newReceipt}
       saving={saving}
       onSave={submit}
       summary={[
-        { label: fa.sheets.itemsCount, value: String(items.length) },
-        { label: fa.sheets.count, value: String(totalCount) },
+        { label: t.sheets.itemsCount, value: String(items.length) },
+        { label: t.sheets.count, value: String(totalCount) },
         {
-          label: fa.sheets.totalWeight,
+          label: t.sheets.totalWeight,
           value: formatTotalWeight(totalWeight),
           strong: true,
         },
@@ -217,7 +219,7 @@ export function ReceiptEditor({
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label>{fa.sheets.client}</Label>
+            <Label>{t.sheets.client}</Label>
             <Select
               value={clientId}
               onValueChange={(v) => {
@@ -226,10 +228,10 @@ export function ReceiptEditor({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder={fa.editor.selectClient} />
+                <SelectValue placeholder={t.editor.selectClient} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_CLIENT}>{fa.editor.noClient}</SelectItem>
+                <SelectItem value={NO_CLIENT}>{t.editor.noClient}</SelectItem>
                 {clients.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -240,7 +242,7 @@ export function ReceiptEditor({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="date">{fa.common.date}</Label>
+            <Label htmlFor="date">{t.common.date}</Label>
             <DatePicker
               id="date"
               value={date}
@@ -255,11 +257,11 @@ export function ReceiptEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.sheets.product}</CardTitle>
+          <CardTitle>{t.sheets.product}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {products.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{fa.editor.noProducts}</p>
+            <p className="text-muted-foreground text-sm">{t.editor.noProducts}</p>
           ) : null}
 
           <EditorTable
@@ -274,10 +276,10 @@ export function ReceiptEditor({
             <EditorHead
               labels={[
                 null,
-                fa.sheets.product,
-                fa.sheets.count,
-                fa.sheets.unitWeight,
-                { label: fa.sheets.totalWeight, align: "end" as const },
+                t.sheets.product,
+                t.sheets.count,
+                t.sheets.unitWeight,
+                { label: t.sheets.totalWeight, align: "end" as const },
                 null,
               ]}
             />
@@ -294,8 +296,8 @@ export function ReceiptEditor({
                   value={item.productId ?? ""}
                   onValueChange={(v) => pickProduct(index, v ?? "")}
                 >
-                  <SelectTrigger aria-label={fa.sheets.product}>
-                    <SelectValue placeholder={fa.editor.selectProduct}>
+                  <SelectTrigger aria-label={t.sheets.product}>
+                    <SelectValue placeholder={t.editor.selectProduct}>
                       {item.productName || undefined}
                     </SelectValue>
                   </SelectTrigger>
@@ -311,12 +313,12 @@ export function ReceiptEditor({
 
                 <NumberInput
                   value={item.quantity}
-                  aria-label={fa.sheets.count}
+                  aria-label={t.sheets.count}
                   onValueChange={(v) => updateItem(index, { quantity: v })}
                 />
                 <NumberInput
                   value={item.unitWeight}
-                  aria-label={fa.sheets.unitWeight}
+                  aria-label={t.sheets.unitWeight}
                   onValueChange={(v) => updateItem(index, { unitWeight: v })}
                 />
 
@@ -365,14 +367,14 @@ export function ReceiptEditor({
             }}
           >
             <HugeiconsIcon icon={Add01Icon} />
-            {fa.actions.addRow}
+            {t.actions.addRow}
           </Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.common.notes}</CardTitle>
+          <CardTitle>{t.common.notes}</CardTitle>
         </CardHeader>
         <CardContent>
           <Textarea

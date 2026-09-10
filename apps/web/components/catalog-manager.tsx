@@ -19,7 +19,7 @@ import { Label } from "@workspace/ui/components/label"
 import { deleteCatalogItem, saveCatalogItem } from "@/actions/reference"
 import { catalogKey } from "@/lib/catalog-key"
 import { formatAmount, parseNumber, toLatinDigits } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { CatalogItem, CatalogKind } from "@/lib/types"
 
 // One screen serves both catalogs. They never mix: the auction one remembers a
@@ -31,6 +31,8 @@ export function CatalogManager({
   kind: CatalogKind
   items: CatalogItem[]
 }) {
+  const t = useT()
+
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [editing, setEditing] = useState<CatalogItem | null>(null)
@@ -54,7 +56,7 @@ export function CatalogManager({
       return
     }
     setOpen(false)
-    toast.success(fa.common.saved)
+    toast.success(t.common.saved)
     router.refresh()
   }
 
@@ -62,7 +64,7 @@ export function CatalogManager({
     <>
       <div className="mb-1 flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">
-          {kind === "PRICE" ? fa.catalog.priceTitle : fa.catalog.manTitle}
+          {kind === "PRICE" ? t.catalog.priceTitle : t.catalog.manTitle}
         </h1>
         <Button
           onClick={() => {
@@ -71,10 +73,10 @@ export function CatalogManager({
           }}
         >
           <HugeiconsIcon icon={Add01Icon} />
-          {fa.catalog.new}
+          {t.catalog.new}
         </Button>
       </div>
-      <p className="text-muted-foreground mb-4 text-sm">{fa.catalog.description}</p>
+      <p className="text-muted-foreground mb-4 text-sm">{t.catalog.description}</p>
 
       <div className="relative mb-4 max-w-sm">
         <HugeiconsIcon
@@ -84,15 +86,15 @@ export function CatalogManager({
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={fa.actions.search}
+          placeholder={t.actions.search}
           className="ps-9"
-          aria-label={fa.actions.search}
+          aria-label={t.actions.search}
         />
       </div>
 
       {filtered.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border border-dashed p-10 text-center">
-          {items.length === 0 ? fa.catalog.empty : fa.common.noSearchResults}
+          {items.length === 0 ? t.catalog.empty : t.common.noSearchResults}
         </p>
       ) : (
         <ul className="grid gap-2">
@@ -105,7 +107,7 @@ export function CatalogManager({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.edit}
+                aria-label={t.actions.edit}
                 onClick={() => {
                   setEditing(item)
                   setOpen(true)
@@ -116,10 +118,10 @@ export function CatalogManager({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.delete}
+                aria-label={t.actions.delete}
                 onClick={async () => {
                   await deleteCatalogItem(kind, item.id)
-                  toast.success(fa.common.deleted)
+                  toast.success(t.common.deleted)
                   router.refresh()
                 }}
               >
@@ -133,16 +135,16 @@ export function CatalogManager({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? fa.catalog.edit : fa.catalog.new}</DialogTitle>
+            <DialogTitle>{editing ? t.catalog.edit : t.catalog.new}</DialogTitle>
           </DialogHeader>
           <form action={submit} key={editing?.id ?? "new"} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">{fa.common.name}</Label>
+              <Label htmlFor="name">{t.common.name}</Label>
               <Input id="name" name="name" defaultValue={editing?.name ?? ""} required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="price">
-                {kind === "MAN" ? fa.sheets.pricePerMan : fa.sheets.price}
+                {kind === "MAN" ? t.sheets.pricePerMan : t.sheets.price}
               </Label>
               <Input
                 id="price"
@@ -154,7 +156,7 @@ export function CatalogManager({
             </div>
             <DialogFooter>
               <Button type="submit" disabled={saving}>
-                {saving ? fa.editor.saving : fa.actions.save}
+                {saving ? t.editor.saving : t.actions.save}
               </Button>
             </DialogFooter>
           </form>

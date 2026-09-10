@@ -4,24 +4,31 @@ import { Button } from "@workspace/ui/components/button"
 import { SettingsForm } from "@/components/settings-form"
 import { getCurrentUser } from "@/lib/dal"
 import { getSettings } from "@/lib/data"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.settings.title} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.settings.title} — ${t.appName}` }
+}
 
 export default async function SettingsPage() {
+  const t = await getT()
+
   const [settings, user] = await Promise.all([getSettings(), getCurrentUser()])
 
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{fa.settings.title}</h1>
+        <h1 className="text-xl font-semibold">{t.settings.title}</h1>
         {user?.role === "ADMIN" ? (
           <Button
             variant="outline"
             render={<Link href="/settings/users" />}
             nativeButton={false}
           >
-            {fa.settings.users}
+            {t.settings.users}
           </Button>
         ) : null}
       </div>

@@ -1,7 +1,9 @@
+"use client"
+
 import type { Ref } from "react"
 
 import { formatAmount, formatMoney, ledgerBalances } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { Ledger, Settings } from "@/lib/types"
 
 import {
@@ -26,19 +28,21 @@ export function LedgerSheet({
   ledger: Ledger
   settings: Settings
 }) {
+  const t = useT()
+
   const cols = settings.ledgerColumns
   const { primaryColor, accentColor } = settings
   const { cumulative, grandTotal } = ledgerBalances(ledger.rows)
 
   type Row = Ledger["rows"][number]
   const columns: SheetColumn<Row>[] = [
-    { key: "name", label: fa.common.name, strong: true, render: (r) => r.name },
+    { key: "name", label: t.common.name, strong: true, render: (r) => r.name },
   ]
 
   if (cols.invoice) {
     columns.push({
       key: "invoice",
-      label: fa.sheets.invoice,
+      label: t.sheets.invoice,
       numeric: true,
       render: (r) => formatAmount(r.invoice),
     })
@@ -46,7 +50,7 @@ export function LedgerSheet({
   if (cols.commission) {
     columns.push({
       key: "commission",
-      label: fa.sheets.commission,
+      label: t.sheets.commission,
       numeric: true,
       render: (r) => formatAmount(r.commission),
     })
@@ -54,7 +58,7 @@ export function LedgerSheet({
   if (cols.cash) {
     columns.push({
       key: "cash",
-      label: fa.sheets.cash,
+      label: t.sheets.cash,
       numeric: true,
       render: (r) => formatAmount(r.cash),
     })
@@ -62,7 +66,7 @@ export function LedgerSheet({
   if (cols.balance) {
     columns.push({
       key: "balance",
-      label: fa.sheets.balance,
+      label: t.sheets.balance,
       numeric: true,
       cellStyle: { fontWeight: 600, color: accentColor },
       render: (_r, i) => formatAmount(cumulative[i] ?? 0),
@@ -71,7 +75,7 @@ export function LedgerSheet({
   if (cols.date) {
     columns.push({
       key: "date",
-      label: fa.common.date,
+      label: t.common.date,
       cellStyle: { color: "#525252", whiteSpace: "nowrap" },
       render: (r) => (r.date ? formatShortDate(r.date) : ""),
     })
@@ -94,7 +98,7 @@ export function LedgerSheet({
         icon="ledger"
         primaryColor={primaryColor}
         accentColor={accentColor}
-        label={fa.sheets.ledgerTitleLabel}
+        label={t.sheets.ledgerTitleLabel}
         value={ledger.title || `#${ledger.number}`}
         date={formatLongDate(ledger.date)}
       />
@@ -108,8 +112,8 @@ export function LedgerSheet({
           <tr>
             <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
               {cols.balance
-                ? fa.common.total
-                : `${fa.common.total}: ${formatMoney(grandTotal)}`}
+                ? t.common.total
+                : `${t.common.total}: ${formatMoney(grandTotal)}`}
             </td>
             {cols.balance ? (
               <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>

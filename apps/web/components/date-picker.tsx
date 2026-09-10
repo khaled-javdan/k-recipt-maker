@@ -12,7 +12,7 @@ import {
 } from "@workspace/ui/components/popover"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import { formatSheetDate } from "./sheets/sheet"
 
 // Dates are stored as ISO yyyy-mm-dd, the same shape the old <input type="date">
@@ -49,6 +49,8 @@ export function DatePicker({
   className?: string
   disabled?: boolean
 }) {
+  const t = useT()
+
   const [open, setOpen] = useState(false)
   const selected = parseIsoDate(value)
 
@@ -74,7 +76,7 @@ export function DatePicker({
             !selected && "text-muted-foreground"
           )}
         >
-          {selected ? formatSheetDate(value) : fa.common.pickDate}
+          {selected ? formatSheetDate(value) : t.common.pickDate}
         </span>
       </PopoverTrigger>
 

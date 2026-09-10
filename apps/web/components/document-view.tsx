@@ -26,7 +26,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 
 import { exportAsImage, exportAsPdf } from "@/lib/export"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // One toolbar for all four document types: print, the two exports, edit and
 // delete. The sheet itself is passed in as children so this stays unaware of
@@ -42,6 +42,8 @@ export function DocumentView({
   onDelete: () => Promise<void>
   children: ReactNode
 }) {
+  const t = useT()
+
   const sheetRef = useRef<HTMLDivElement>(null)
   const [busy, setBusy] = useState(false)
   const router = useRouter()
@@ -52,7 +54,7 @@ export function DocumentView({
     try {
       await fn(sheetRef.current, filename)
     } catch {
-      toast.error(fa.common.exportFailed)
+      toast.error(t.common.exportFailed)
     } finally {
       setBusy(false)
     }
@@ -63,7 +65,7 @@ export function DocumentView({
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button variant="outline" size="sm" onClick={() => window.print()}>
           <HugeiconsIcon icon={PrinterIcon} />
-          {fa.actions.print}
+          {t.actions.print}
         </Button>
         <Button
           variant="outline"
@@ -72,7 +74,7 @@ export function DocumentView({
           onClick={() => runExport(exportAsImage)}
         >
           <HugeiconsIcon icon={Image01Icon} />
-          {fa.actions.exportImage}
+          {t.actions.exportImage}
         </Button>
         <Button
           variant="outline"
@@ -81,38 +83,38 @@ export function DocumentView({
           onClick={() => runExport(exportAsPdf)}
         >
           <HugeiconsIcon icon={Download01Icon} />
-          {fa.actions.exportPdf}
+          {t.actions.exportPdf}
         </Button>
 
         <div className="ms-auto flex items-center gap-2">
           <Button size="sm" render={<Link href={editHref} />} nativeButton={false}>
             <HugeiconsIcon icon={Edit02Icon} />
-            {fa.actions.edit}
+            {t.actions.edit}
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
               <HugeiconsIcon icon={Delete02Icon} />
-              {fa.actions.delete}
+              {t.actions.delete}
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{fa.actions.deleteConfirmTitle}</AlertDialogTitle>
+                <AlertDialogTitle>{t.actions.deleteConfirmTitle}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {fa.actions.deleteConfirmBody}
+                  {t.actions.deleteConfirmBody}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>{fa.actions.cancel}</AlertDialogCancel>
+                <AlertDialogCancel>{t.actions.cancel}</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
                   onClick={async () => {
                     await onDelete()
-                    toast.success(fa.common.deleted)
+                    toast.success(t.common.deleted)
                     router.refresh()
                   }}
                 >
-                  {fa.actions.delete}
+                  {t.actions.delete}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

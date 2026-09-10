@@ -9,7 +9,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 
 import { toLatinDigits } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import { formatSheetDate } from "./sheets/sheet"
 
 export type DocumentRow = {
@@ -34,6 +34,8 @@ export function DocumentList({
   basePath: string
   newLabel: string
 }) {
+  const t = useT()
+
   const [query, setQuery] = useState("")
 
   const filtered = useMemo(() => {
@@ -62,9 +64,9 @@ export function DocumentList({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={fa.actions.search}
+            placeholder={t.actions.search}
             className="ps-9"
-            aria-label={fa.actions.search}
+            aria-label={t.actions.search}
           />
         </div>
 
@@ -80,9 +82,9 @@ export function DocumentList({
 
       {filtered.length === 0 ? (
         <div className="text-muted-foreground rounded-lg border border-dashed p-10 text-center">
-          <p>{rows.length === 0 ? fa.common.empty : fa.common.noSearchResults}</p>
+          <p>{rows.length === 0 ? t.common.empty : t.common.noSearchResults}</p>
           {rows.length === 0 ? (
-            <p className="mt-1 text-sm">{fa.common.emptyHint}</p>
+            <p className="mt-1 text-sm">{t.common.emptyHint}</p>
           ) : null}
         </div>
       ) : (

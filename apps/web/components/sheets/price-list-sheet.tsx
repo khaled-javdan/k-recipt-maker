@@ -1,7 +1,9 @@
+"use client"
+
 import type { Ref } from "react"
 
 import { deductionTotals, formatAmount, layoutColumns } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { PriceList, Settings } from "@/lib/types"
 
 import { DeductionFooter, commissionLabel } from "./deduction-sheet"
@@ -20,6 +22,8 @@ export function PriceListSheet({
   priceList: PriceList
   settings: Settings
 }) {
+  const t = useT()
+
   const { primaryColor, accentColor } = settings
   const { itemsPerColumn, maxColumns } = settings.priceListConfig
 
@@ -40,12 +44,12 @@ export function PriceListSheet({
         icon="priceList"
         primaryColor={primaryColor}
         accentColor={accentColor}
-        label={fa.sheets.listTitleLabel}
+        label={t.sheets.listTitleLabel}
         value={priceList.title || `#${priceList.number}`}
         date={formatSheetDate(priceList.date)}
         subline={
           priceList.basketCount
-            ? `${fa.sheets.basketCount} : ${priceList.basketCount}`
+            ? `${t.sheets.basketCount} : ${priceList.basketCount}`
             : null
         }
       />
@@ -75,10 +79,10 @@ export function PriceListSheet({
             <thead>
               <tr style={{ background: primaryColor, color: "#ffffff" }}>
                 <th style={{ padding: "8px 12px", textAlign: "start", fontWeight: 600 }}>
-                  {fa.sheets.item}
+                  {t.sheets.item}
                 </th>
                 <th style={{ padding: "8px 12px", textAlign: "end", fontWeight: 600 }}>
-                  {fa.sheets.price}
+                  {t.sheets.price}
                 </th>
               </tr>
             </thead>
@@ -115,7 +119,7 @@ export function PriceListSheet({
         expensesTotal={totals.expenses}
         subtotal={totals.subtotal}
         commission={totals.commission}
-        commissionLabel={commissionLabel(
+        commissionLabel={commissionLabel(t, 
           priceList.commission,
           priceList.commissionIsPercent
         )}

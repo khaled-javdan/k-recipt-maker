@@ -17,10 +17,12 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 
 import { deleteClient, saveClient } from "@/actions/reference"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { Client } from "@/lib/types"
 
 export function ClientsManager({ clients }: { clients: Client[] }) {
+  const t = useT()
+
   const router = useRouter()
   const [editing, setEditing] = useState<Client | null>(null)
   const [open, setOpen] = useState(false)
@@ -45,23 +47,23 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
       return
     }
     setOpen(false)
-    toast.success(fa.common.saved)
+    toast.success(t.common.saved)
     router.refresh()
   }
 
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{fa.clients.title}</h1>
+        <h1 className="text-xl font-semibold">{t.clients.title}</h1>
         <Button onClick={openNew}>
           <HugeiconsIcon icon={Add01Icon} />
-          {fa.clients.new}
+          {t.clients.new}
         </Button>
       </div>
 
       {clients.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border border-dashed p-10 text-center">
-          {fa.clients.empty}
+          {t.clients.empty}
         </p>
       ) : (
         <ul className="grid gap-2">
@@ -79,7 +81,7 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.edit}
+                aria-label={t.actions.edit}
                 onClick={() => openEdit(client)}
               >
                 <HugeiconsIcon icon={Edit02Icon} />
@@ -87,10 +89,10 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={fa.actions.delete}
+                aria-label={t.actions.delete}
                 onClick={async () => {
                   await deleteClient(client.id)
-                  toast.success(fa.common.deleted)
+                  toast.success(t.common.deleted)
                   router.refresh()
                 }}
               >
@@ -105,7 +107,7 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editing ? fa.clients.edit : fa.clients.new}
+              {editing ? t.clients.edit : t.clients.new}
             </DialogTitle>
           </DialogHeader>
 
@@ -113,11 +115,11 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
               when a different client is opened. */}
           <form action={submit} key={editing?.id ?? "new"} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">{fa.common.name}</Label>
+              <Label htmlFor="name">{t.common.name}</Label>
               <Input id="name" name="name" defaultValue={editing?.name ?? ""} required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="phone">{fa.common.phone}</Label>
+              <Label htmlFor="phone">{t.common.phone}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -127,12 +129,12 @@ export function ClientsManager({ clients }: { clients: Client[] }) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="address">{fa.common.address}</Label>
+              <Label htmlFor="address">{t.common.address}</Label>
               <Input id="address" name="address" defaultValue={editing?.address ?? ""} />
             </div>
             <DialogFooter>
               <Button type="submit" disabled={saving}>
-                {saving ? fa.editor.saving : fa.actions.save}
+                {saving ? t.editor.saving : t.actions.save}
               </Button>
             </DialogFooter>
           </form>

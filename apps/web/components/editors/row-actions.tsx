@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // Per-row menu shared by every editor. Sheets get built out of order — a line
 // remembered late belongs above the one just typed — so inserting and moving
@@ -35,29 +35,31 @@ export function RowActions({
   onMoveDown: () => void
   onRemove: () => void
 }) {
+  const t = useT()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label={fa.actions.rowActions} />
+          <Button variant="ghost" size="icon-sm" aria-label={t.actions.rowActions} />
         }
       >
         <HugeiconsIcon icon={MoreVerticalIcon} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={onInsertAbove}>
-          {fa.actions.insertAbove}
+          {t.actions.insertAbove}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onInsertBelow}>
-          {fa.actions.insertBelow}
+          {t.actions.insertBelow}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onDuplicate}>{fa.actions.duplicate}</DropdownMenuItem>
+        <DropdownMenuItem onClick={onDuplicate}>{t.actions.duplicate}</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={index === 0} onClick={onMoveUp}>
-          {fa.actions.moveUp}
+          {t.actions.moveUp}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={index === rowCount - 1} onClick={onMoveDown}>
-          {fa.actions.moveDown}
+          {t.actions.moveDown}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* The last row is never removable: an editor with no rows has no
@@ -67,7 +69,7 @@ export function RowActions({
           disabled={rowCount <= 1}
           onClick={onRemove}
         >
-          {fa.actions.remove}
+          {t.actions.remove}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

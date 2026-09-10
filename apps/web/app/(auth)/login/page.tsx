@@ -1,8 +1,13 @@
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
 import { SignInForm } from "./sign-in-form"
 
-export const metadata = { title: `${fa.auth.signIn} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.auth.signIn} — ${t.appName}` }
+}
 
 export default async function LoginPage({
   searchParams,

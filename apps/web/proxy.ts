@@ -8,8 +8,17 @@ import { COOKIE_NAME } from "./lib/session"
 
 const PUBLIC_PATHS = ["/login"]
 
+// The PWA plumbing has to resolve for everyone, signed in or out, and must not
+// be bounced by either redirect below: an install prompt on the login screen
+// needs the manifest, the browser fetches /sw.js on its own schedule, and
+// /offline is what the worker shows when there is no network to check a
+// session against. `.png`/`.ico` assets are already excluded by the matcher.
+const PWA_PATHS = ["/sw.js", "/manifest.webmanifest", "/offline"]
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  if (PWA_PATHS.includes(pathname)) return NextResponse.next()
   const hasCookie = Boolean(request.cookies.get(COOKIE_NAME)?.value)
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 

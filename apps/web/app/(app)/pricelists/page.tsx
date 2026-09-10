@@ -4,9 +4,14 @@ import { PageHeader } from "@/components/page-header"
 import { bucketDays, resolveRange, toIsoDate } from "@/lib/analytics"
 import { deductionTotals, formatMoney } from "@/lib/calc"
 import { getSheetEarnings, listEarningRows, listPriceLists } from "@/lib/data"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.nav.priceLists} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.nav.priceLists} — ${t.appName}` }
+}
 
 export default async function PriceListsPage({
   searchParams,
@@ -18,6 +23,8 @@ export default async function PriceListsPage({
     details?: string
   }>
 }) {
+  const t = await getT()
+
   const params = await searchParams
   // Everything here comes from a URL anyone can edit, so resolveRange() repairs
   // or falls back rather than letting a bad value reach the query.
@@ -42,11 +49,11 @@ export default async function PriceListsPage({
     return {
       id: p.id,
       number: p.number,
-      title: p.title || fa.sheets.priceListTitle,
+      title: p.title || t.sheets.priceListTitle,
       date: p.date,
       meta: [
-        `${fa.common.items}: ${p.items.length}`,
-        `${fa.sheets.commission}: ${formatMoney(totals.commission)}`,
+        `${t.common.items}: ${p.items.length}`,
+        `${t.sheets.commission}: ${formatMoney(totals.commission)}`,
       ],
       amount: formatMoney(totals.grandTotal),
     }
@@ -54,12 +61,12 @@ export default async function PriceListsPage({
 
   return (
     <>
-      <PageHeader title={fa.nav.priceLists} />
+      <PageHeader title={t.nav.priceLists} />
 
       <EarningsPanel
         basePath="/pricelists"
-        description={fa.earnings.descriptionPriceLists}
-        untitledLabel={fa.sheets.priceListTitle}
+        description={t.earnings.descriptionPriceLists}
+        untitledLabel={t.sheets.priceListTitle}
         range={range.key}
         from={range.from}
         to={range.to}
@@ -71,7 +78,7 @@ export default async function PriceListsPage({
         rows={breakdownRows}
       />
 
-      <DocumentList rows={rows} basePath="/pricelists" newLabel={fa.actions.new} />
+      <DocumentList rows={rows} basePath="/pricelists" newLabel={t.actions.new} />
     </>
   )
 }

@@ -14,19 +14,22 @@ import {
 import { Input } from "@workspace/ui/components/input"
 
 import { importBackup } from "@/actions/import"
-import { fa } from "@/lib/fa"
-
-const LABELS: Record<string, string> = {
-  clients: fa.nav.clients,
-  products: fa.nav.products,
-  receipts: fa.nav.receipts,
-  ledgers: fa.nav.ledgers,
-  priceLists: fa.nav.priceLists,
-  manReceipts: fa.nav.manReceipts,
-  catalog: fa.catalog.priceTitle,
-}
+import { useT } from "@/components/i18n-provider"
 
 export function ImportPanel() {
+  const t = useT()
+
+  // Built per render: the language is only known once the component runs.
+  const labels: Record<string, string> = {
+    clients: t.nav.clients,
+    products: t.nav.products,
+    receipts: t.nav.receipts,
+    ledgers: t.nav.ledgers,
+    priceLists: t.nav.priceLists,
+    manReceipts: t.nav.manReceipts,
+    catalog: t.catalog.priceTitle,
+  }
+
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [running, setRunning] = useState(false)
@@ -45,13 +48,13 @@ export function ImportPanel() {
         return
       }
       setSummary(result.summary ?? null)
-      toast.success(fa.import.done)
+      toast.success(t.import.done)
       // The documents landed; the logo is the one part the user can redo by
       // hand, so it is a warning beside the summary rather than a failure.
       if (result.warning) toast.warning(result.warning)
       router.refresh()
     } catch {
-      toast.error(fa.import.invalidFile)
+      toast.error(t.import.invalidFile)
     } finally {
       setRunning(false)
     }
@@ -60,11 +63,11 @@ export function ImportPanel() {
   return (
     <Card className="max-w-xl">
       <CardHeader>
-        <CardTitle>{fa.import.title}</CardTitle>
-        <CardDescription>{fa.import.description}</CardDescription>
+        <CardTitle>{t.import.title}</CardTitle>
+        <CardDescription>{t.import.description}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <p className="text-muted-foreground text-sm">{fa.import.warning}</p>
+        <p className="text-muted-foreground text-sm">{t.import.warning}</p>
 
         <Input
           type="file"
@@ -74,16 +77,16 @@ export function ImportPanel() {
 
         <div>
           <Button onClick={run} disabled={!file || running}>
-            {running ? fa.import.running : fa.import.run}
+            {running ? t.import.running : t.import.run}
           </Button>
         </div>
 
         {summary ? (
           <div className="grid gap-1 rounded-lg border p-3 text-sm">
-            <div className="mb-1 font-medium">{fa.import.summary}</div>
+            <div className="mb-1 font-medium">{t.import.summary}</div>
             {Object.entries(summary).map(([key, count]) => (
               <div key={key} className="flex justify-between">
-                <span>{LABELS[key] ?? key}</span>
+                <span>{labels[key] ?? key}</span>
                 <span className="tabular-nums" dir="ltr">
                   {count}
                 </span>

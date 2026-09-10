@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@workspace/db"
 import { normalizeUsername, verifyPassword } from "@workspace/db/password"
 
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 import { createSession, destroySession } from "@/lib/session"
 
 export type SignInState = { error?: string }
@@ -18,19 +18,21 @@ export async function signIn(
   _prev: SignInState,
   formData: FormData
 ): Promise<SignInState> {
+  const t = await getT()
+
   const username = normalizeUsername(String(formData.get("username") ?? ""))
   const password = String(formData.get("password") ?? "")
   const next = String(formData.get("next") ?? "")
 
-  if (!username || !password) return { error: fa.auth.missingFields }
+  if (!username || !password) return { error: t.auth.missingFields }
 
   const user = await prisma.user.findUnique({ where: { username } })
   const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH)
 
   // Same message for "no such user" and "wrong password", so the page cannot
   // be used to enumerate accounts.
-  if (!user || !ok) return { error: fa.auth.invalid }
-  if (!user.isActive) return { error: fa.auth.inactive }
+  if (!user || !ok) return { error: t.auth.invalid }
+  if (!user.isActive) return { error: t.auth.inactive }
 
   await createSession(user.id)
 

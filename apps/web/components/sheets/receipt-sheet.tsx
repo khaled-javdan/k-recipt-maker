@@ -1,7 +1,9 @@
+"use client"
+
 import type { Ref } from "react"
 
 import { formatTotalWeight, formatUnitWeight } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { Receipt, ReceiptColumns, Settings } from "@/lib/types"
 
 import {
@@ -26,6 +28,8 @@ export function ReceiptSheet({
   receipt: Receipt
   settings: Settings
 }) {
+  const t = useT()
+
   const cols: ReceiptColumns = settings.receiptColumns
   const { primaryColor, accentColor } = settings
 
@@ -39,7 +43,7 @@ export function ReceiptSheet({
   const columns: SheetColumn<Receipt["items"][number]>[] = [
     {
       key: "product",
-      label: fa.sheets.product,
+      label: t.sheets.product,
       strong: true,
       render: (i) => i.productName,
     },
@@ -48,7 +52,7 @@ export function ReceiptSheet({
   if (cols.sign) {
     columns.push({
       key: "sign",
-      label: fa.sheets.sign,
+      label: t.sheets.sign,
       render: (i) =>
         i.colorName || i.colorHex ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
@@ -71,7 +75,7 @@ export function ReceiptSheet({
   if (cols.count) {
     columns.push({
       key: "count",
-      label: fa.sheets.count,
+      label: t.sheets.count,
       numeric: true,
       render: (i) => i.quantity,
     })
@@ -80,7 +84,7 @@ export function ReceiptSheet({
   if (cols.unitWeight) {
     columns.push({
       key: "unitWeight",
-      label: fa.sheets.unitWeight,
+      label: t.sheets.unitWeight,
       numeric: true,
       render: (i) => formatUnitWeight(i.unitWeight),
     })
@@ -89,7 +93,7 @@ export function ReceiptSheet({
   if (cols.totalWeight) {
     columns.push({
       key: "totalWeight",
-      label: fa.sheets.totalWeight,
+      label: t.sheets.totalWeight,
       numeric: true,
       cellStyle: { fontWeight: 500 },
       // Bare figures down the column; only the جمع band carries the unit.
@@ -105,7 +109,7 @@ export function ReceiptSheet({
         icon="receipt"
         primaryColor={primaryColor}
         accentColor={accentColor}
-        label={fa.sheets.receiptNumberLabel}
+        label={t.sheets.receiptNumberLabel}
         value={`#${receipt.number}`}
         valueWeight={600}
         tabularValue
@@ -115,9 +119,9 @@ export function ReceiptSheet({
       {/* The client sits on its own line under the rule rather than in the
           masthead — it is the one field a reader looks for first. */}
       <div style={{ marginTop: "20px", fontSize: "14px" }}>
-        <div style={labelStyle}>{fa.sheets.client}</div>
+        <div style={labelStyle}>{t.sheets.client}</div>
         <div style={{ marginTop: "2px", fontSize: "16px", fontWeight: 500 }}>
-          {receipt.clientName || fa.sheets.noClient}
+          {receipt.clientName || t.sheets.noClient}
         </div>
       </div>
 
@@ -129,7 +133,7 @@ export function ReceiptSheet({
         footer={
           <tr>
             <td colSpan={labelColSpan} style={footerCell({ fontWeight: 600 })}>
-              {fa.common.total}
+              {t.common.total}
             </td>
             {cols.count ? (
               <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>

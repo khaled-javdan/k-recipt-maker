@@ -2,26 +2,33 @@ import { DocumentList, type DocumentRow } from "@/components/document-list"
 import { PageHeader } from "@/components/page-header"
 import { formatAmount, ledgerBalances } from "@/lib/calc"
 import { listLedgers } from "@/lib/data"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.nav.ledgers} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.nav.ledgers} — ${t.appName}` }
+}
 
 export default async function LedgersPage() {
+  const t = await getT()
+
   const ledgers = await listLedgers()
 
   const rows: DocumentRow[] = ledgers.map((l) => ({
     id: l.id,
     number: l.number,
-    title: l.title || fa.sheets.ledgerTitle,
+    title: l.title || t.sheets.ledgerTitle,
     date: l.date,
-    meta: [`${fa.common.items}: ${l.rows.length}`],
+    meta: [`${t.common.items}: ${l.rows.length}`],
     amount: formatAmount(ledgerBalances(l.rows).grandTotal),
   }))
 
   return (
     <>
-      <PageHeader title={fa.nav.ledgers} />
-      <DocumentList rows={rows} basePath="/ledgers" newLabel={fa.actions.new} />
+      <PageHeader title={t.nav.ledgers} />
+      <DocumentList rows={rows} basePath="/ledgers" newLabel={t.actions.new} />
     </>
   )
 }

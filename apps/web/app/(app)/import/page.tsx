@@ -1,8 +1,13 @@
 import { ImportPanel } from "@/components/import-panel"
 import { requireAdmin } from "@/lib/dal"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.import.title} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.import.title} — ${t.appName}` }
+}
 
 export default async function ImportPage() {
   await requireAdmin()

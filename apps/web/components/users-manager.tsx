@@ -28,7 +28,7 @@ import {
   revokeUserSessions,
   setUserActive,
 } from "@/actions/users"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 export type ManagedUser = {
   id: string
@@ -46,6 +46,8 @@ export function UsersManager({
   users: ManagedUser[]
   currentUserId: string
 }) {
+  const t = useT()
+
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [resetting, setResetting] = useState<ManagedUser | null>(null)
@@ -65,17 +67,17 @@ export function UsersManager({
   return (
     <>
       <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{fa.settings.users}</h1>
+        <h1 className="text-xl font-semibold">{t.settings.users}</h1>
         <Button
           onClick={() => {
             setRole("USER")
             setCreating(true)
           }}
         >
-          {fa.settings.newUser}
+          {t.settings.newUser}
         </Button>
       </div>
-      <p className="text-muted-foreground mb-4 text-sm">{fa.settings.usersDesc}</p>
+      <p className="text-muted-foreground mb-4 text-sm">{t.settings.usersDesc}</p>
 
       <ul className="grid gap-2">
         {users.map((user) => (
@@ -84,19 +86,19 @@ export function UsersManager({
               <div className="flex items-center gap-2">
                 <span className="truncate font-medium">{user.displayName}</span>
                 {user.role === "ADMIN" ? (
-                  <Badge variant="secondary">{fa.settings.roleAdmin}</Badge>
+                  <Badge variant="secondary">{t.settings.roleAdmin}</Badge>
                 ) : null}
                 {!user.isActive ? (
-                  <Badge variant="destructive">{fa.settings.inactive}</Badge>
+                  <Badge variant="destructive">{t.settings.inactive}</Badge>
                 ) : null}
               </div>
               <div className="text-muted-foreground truncate text-sm" dir="ltr">
-                {user.username} · {fa.settings.sessions}: {user.sessionCount}
+                {user.username} · {t.settings.sessions}: {user.sessionCount}
               </div>
             </div>
 
             <Button variant="outline" size="sm" onClick={() => setResetting(user)}>
-              {fa.settings.resetPassword}
+              {t.settings.resetPassword}
             </Button>
 
             <Button
@@ -105,11 +107,11 @@ export function UsersManager({
               disabled={user.sessionCount === 0}
               onClick={async () => {
                 if (await run(() => revokeUserSessions(user.id))) {
-                  toast.success(fa.common.saved)
+                  toast.success(t.common.saved)
                 }
               }}
             >
-              {fa.settings.revokeSessions}
+              {t.settings.revokeSessions}
             </Button>
 
             {/* Deactivating yourself would leave nobody able to undo it, so the
@@ -120,11 +122,11 @@ export function UsersManager({
                 size="sm"
                 onClick={async () => {
                   if (await run(() => setUserActive(user.id, !user.isActive))) {
-                    toast.success(fa.common.saved)
+                    toast.success(t.common.saved)
                   }
                 }}
               >
-                {user.isActive ? fa.settings.inactive : fa.settings.active}
+                {user.isActive ? t.settings.inactive : t.settings.active}
               </Button>
             )}
           </li>
@@ -134,7 +136,7 @@ export function UsersManager({
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{fa.settings.newUser}</DialogTitle>
+            <DialogTitle>{t.settings.newUser}</DialogTitle>
           </DialogHeader>
           <form
             className="grid gap-4"
@@ -145,37 +147,37 @@ export function UsersManager({
               setSaving(false)
               if (ok) {
                 setCreating(false)
-                toast.success(fa.common.saved)
+                toast.success(t.common.saved)
               }
             }}
           >
             <div className="grid gap-2">
-              <Label htmlFor="displayName">{fa.settings.displayName}</Label>
+              <Label htmlFor="displayName">{t.settings.displayName}</Label>
               <Input id="displayName" name="displayName" required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="username">{fa.settings.username}</Label>
+              <Label htmlFor="username">{t.settings.username}</Label>
               <Input id="username" name="username" dir="ltr" autoCapitalize="none" required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">{fa.settings.password}</Label>
+              <Label htmlFor="password">{t.settings.password}</Label>
               <Input id="password" name="password" type="password" dir="ltr" required />
             </div>
             <div className="grid gap-2">
-              <Label>{fa.settings.role}</Label>
+              <Label>{t.settings.role}</Label>
               <Select value={role} onValueChange={(v) => setRole((v as "ADMIN" | "USER") ?? "USER")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">{fa.settings.roleUser}</SelectItem>
-                  <SelectItem value="ADMIN">{fa.settings.roleAdmin}</SelectItem>
+                  <SelectItem value="USER">{t.settings.roleUser}</SelectItem>
+                  <SelectItem value="ADMIN">{t.settings.roleAdmin}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={saving}>
-                {fa.actions.create}
+                {t.actions.create}
               </Button>
             </DialogFooter>
           </form>
@@ -185,7 +187,7 @@ export function UsersManager({
       <Dialog open={Boolean(resetting)} onOpenChange={(o) => !o && setResetting(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{fa.settings.resetPassword}</DialogTitle>
+            <DialogTitle>{t.settings.resetPassword}</DialogTitle>
           </DialogHeader>
           <form
             className="grid gap-4"
@@ -197,17 +199,17 @@ export function UsersManager({
               setSaving(false)
               if (ok) {
                 setResetting(null)
-                toast.success(fa.common.saved)
+                toast.success(t.common.saved)
               }
             }}
           >
             <div className="grid gap-2">
-              <Label htmlFor="newPassword">{fa.settings.password}</Label>
+              <Label htmlFor="newPassword">{t.settings.password}</Label>
               <Input id="newPassword" name="password" type="password" dir="ltr" required />
             </div>
             <DialogFooter>
               <Button type="submit" disabled={saving}>
-                {fa.actions.save}
+                {t.actions.save}
               </Button>
             </DialogFooter>
           </form>

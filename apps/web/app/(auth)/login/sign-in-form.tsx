@@ -13,9 +13,11 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 
 import { signIn, type SignInState } from "@/actions/auth"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 export function SignInForm({ next }: { next?: string }) {
+  const t = useT()
+
   const [state, formAction, pending] = useActionState<SignInState, FormData>(
     signIn,
     {}
@@ -24,15 +26,15 @@ export function SignInForm({ next }: { next?: string }) {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{fa.auth.signInTitle}</CardTitle>
-        <CardDescription>{fa.auth.signInSubtitle}</CardDescription>
+        <CardTitle>{t.auth.signInTitle}</CardTitle>
+        <CardDescription>{t.auth.signInSubtitle}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4">
           {next ? <input type="hidden" name="next" value={next} /> : null}
 
           <div className="grid gap-2">
-            <Label htmlFor="username">{fa.auth.username}</Label>
+            <Label htmlFor="username">{t.auth.username}</Label>
             {/* Credentials are Latin, so these two fields opt out of RTL. */}
             <Input
               id="username"
@@ -46,7 +48,7 @@ export function SignInForm({ next }: { next?: string }) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="password">{fa.auth.password}</Label>
+            <Label htmlFor="password">{t.auth.password}</Label>
             <Input
               id="password"
               name="password"
@@ -64,7 +66,7 @@ export function SignInForm({ next }: { next?: string }) {
           ) : null}
 
           <Button type="submit" disabled={pending} className="w-full">
-            {pending ? fa.auth.signingIn : fa.auth.signIn}
+            {pending ? t.auth.signingIn : t.auth.signIn}
           </Button>
         </form>
       </CardContent>

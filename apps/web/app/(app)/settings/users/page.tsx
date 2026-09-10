@@ -1,9 +1,14 @@
 import { listUsers } from "@/actions/users"
 import { UsersManager } from "@/components/users-manager"
 import { requireAdmin } from "@/lib/dal"
-import { fa } from "@/lib/fa"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata = { title: `${fa.settings.users} — ${fa.appName}` }
+// Titles are part of the translated surface, so they are resolved per
+// request like everything else rather than frozen at module load.
+export async function generateMetadata() {
+  const t = await getT()
+  return { title: `${t.settings.users} — ${t.appName}` }
+}
 
 export default async function UsersPage() {
   // requireAdmin redirects a non-admin away before any of this renders.

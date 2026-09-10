@@ -1,6 +1,8 @@
+"use client"
+
 import type { CSSProperties, ReactNode, Ref } from "react"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // Print primitives.
 //
@@ -145,6 +147,8 @@ export function SheetHeader({
   date: string
   subline?: string | null
 }) {
+  const t = useT()
+
   return (
     <div
       style={{
@@ -199,7 +203,7 @@ export function SheetHeader({
         {subline ? (
           <div>
             <div style={{ fontSize: "20px", fontWeight: 700, lineHeight: 1.2 }}>
-              {companyName || fa.appName}
+              {companyName || t.appName}
             </div>
             <div
               style={{
@@ -214,7 +218,7 @@ export function SheetHeader({
           </div>
         ) : (
           <div style={{ fontSize: "20px", fontWeight: 700, lineHeight: 1.2 }}>
-            {companyName || fa.appName}
+            {companyName || t.appName}
           </div>
         )}
       </div>
@@ -414,10 +418,12 @@ export function footerCell(
 // ─── Notes ─────────────────────────────────────────────────────────────────
 
 export function SheetNotes({ notes }: { notes?: string | null }) {
+  const t = useT()
+
   if (!notes) return null
   return (
     <div style={{ marginTop: "24px" }}>
-      <div style={labelStyle}>{fa.common.notes}</div>
+      <div style={labelStyle}>{t.common.notes}</div>
       <p
         style={{
           marginTop: "4px",

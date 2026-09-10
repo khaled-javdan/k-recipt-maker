@@ -6,12 +6,15 @@ import { Logout01Icon, Moon02Icon, Sun01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@workspace/ui/components/button"
 import { SidebarTrigger } from "@workspace/ui/components/sidebar"
 
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { LayoutWidthToggle } from "@/components/layout-width"
 import { signOut } from "@/actions/auth"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { CurrentUser } from "@/lib/dal"
 
 export function AppHeader({ user }: { user: CurrentUser }) {
+  const t = useT()
+
   const { resolvedTheme, setTheme } = useTheme()
 
   return (
@@ -23,13 +26,15 @@ export function AppHeader({ user }: { user: CurrentUser }) {
       <div className="ms-auto flex items-center gap-1">
         <LayoutWidthToggle />
 
+        <LanguageSwitcher />
+
         {/* The server cannot know the viewer's theme, so picking an icon from
             resolvedTheme mismatches on hydration. Both are rendered and CSS
             shows the right one, which also avoids an icon flash on load. */}
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={fa.shell.theme}
+          aria-label={t.shell.theme}
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         >
           <HugeiconsIcon icon={Moon02Icon} className="dark:hidden" />
@@ -41,7 +46,7 @@ export function AppHeader({ user }: { user: CurrentUser }) {
             type="submit"
             variant="ghost"
             size="icon-sm"
-            aria-label={fa.auth.signOut}
+            aria-label={t.auth.signOut}
           >
             <HugeiconsIcon icon={Logout01Icon} />
           </Button>

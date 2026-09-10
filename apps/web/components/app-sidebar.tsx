@@ -25,23 +25,25 @@ import {
   useSidebar,
 } from "@workspace/ui/components/sidebar"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 // The old app crammed seven destinations into a horizontally scrolling strip.
 // A sidebar shows all of them at once on desktop and collapses to a drawer on
 // a phone, which is where this app is actually used.
 
+// Routes and icons are static; the labels are not, so they are looked up per
+// render from the dictionary rather than frozen here.
 const DOCUMENTS = [
-  { href: "/receipts", label: fa.nav.receipts, icon: Invoice01Icon },
-  { href: "/ledgers", label: fa.nav.ledgers, icon: BookOpen01Icon },
-  { href: "/pricelists", label: fa.nav.priceLists, icon: Note01Icon },
-  { href: "/manreceipts", label: fa.nav.manReceipts, icon: WeightScaleIcon },
+  { href: "/receipts", key: "receipts", icon: Invoice01Icon },
+  { href: "/ledgers", key: "ledgers", icon: BookOpen01Icon },
+  { href: "/pricelists", key: "priceLists", icon: Note01Icon },
+  { href: "/manreceipts", key: "manReceipts", icon: WeightScaleIcon },
 ] as const
 
 const REFERENCE = [
-  { href: "/clients", label: fa.nav.clients, icon: UserGroupIcon },
-  { href: "/products", label: fa.nav.products, icon: PackageIcon },
-  { href: "/settings", label: fa.nav.settings, icon: Settings01Icon },
+  { href: "/clients", key: "clients", icon: UserGroupIcon },
+  { href: "/products", key: "products", icon: PackageIcon },
+  { href: "/settings", key: "settings", icon: Settings01Icon },
 ] as const
 
 export function AppSidebar({
@@ -51,6 +53,8 @@ export function AppSidebar({
   companyName: string
   logoUrl: string | null
 }) {
+  const t = useT()
+
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -82,14 +86,14 @@ export function AppSidebar({
             />
           ) : null}
           <span className="truncate text-sm font-semibold group-data-[collapsible=icon]:hidden">
-            {companyName || fa.appName}
+            {companyName || t.appName}
           </span>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{fa.nav.documents}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.nav.documents}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {DOCUMENTS.map((item) => (
@@ -97,10 +101,10 @@ export function AppSidebar({
                   <SidebarMenuButton
                     render={<Link href={item.href} onClick={closeOnMobile} />}
                     isActive={isActive(item.href)}
-                    tooltip={item.label}
+                    tooltip={t.nav[item.key]}
                   >
                     <HugeiconsIcon icon={item.icon} />
-                    <span>{item.label}</span>
+                    <span>{t.nav[item.key]}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -109,7 +113,7 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>{fa.nav.manage}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.nav.manage}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {REFERENCE.map((item) => (
@@ -117,10 +121,10 @@ export function AppSidebar({
                   <SidebarMenuButton
                     render={<Link href={item.href} onClick={closeOnMobile} />}
                     isActive={isActive(item.href)}
-                    tooltip={item.label}
+                    tooltip={t.nav[item.key]}
                   >
                     <HugeiconsIcon icon={item.icon} />
-                    <span>{item.label}</span>
+                    <span>{t.nav[item.key]}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

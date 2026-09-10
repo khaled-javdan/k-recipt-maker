@@ -1,7 +1,10 @@
+"use client"
+
 import type { ReactNode } from "react"
 
 import { formatAmount, formatMoney } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
+import type { Dictionary } from "@/lib/i18n"
 import type { ExpenseItem } from "@/lib/types"
 
 // The block فیش مزاد and فیش من share below their tables: the itemised هزینه‌ها
@@ -38,6 +41,8 @@ export function DeductionFooter({
   /** فیش من opens its stack with the total weight. */
   leadingTotal?: ReactNode
 }) {
+  const t = useT()
+
   return (
     <div
       style={{
@@ -70,7 +75,7 @@ export function DeductionFooter({
                 color: MUTED,
               }}
             >
-              <span>{e.label || fa.sheets.expenses}</span>
+              <span>{e.label || t.sheets.expenses}</span>
               <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
                 {formatAmount(e.amount)}
               </span>
@@ -88,7 +93,7 @@ export function DeductionFooter({
               fontWeight: 700,
             }}
           >
-            <span>{fa.sheets.expenses}</span>
+            <span>{t.sheets.expenses}</span>
             <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
               {formatAmount(expensesTotal)}
             </span>
@@ -100,12 +105,12 @@ export function DeductionFooter({
 
       <div style={{ width: "320px", maxWidth: "100%" }}>
         {leadingTotal}
-        <TotalLine label={fa.sheets.subtotal} value={formatAmount(subtotal)} />
+        <TotalLine label={t.sheets.subtotal} value={formatAmount(subtotal)} />
         {commission ? (
           <TotalLine label={commissionLabel} value={`− ${formatAmount(commission)}`} />
         ) : null}
         {expensesTotal ? (
-          <TotalLine label={fa.sheets.expenses} value={`− ${formatAmount(expensesTotal)}`} />
+          <TotalLine label={t.sheets.expenses} value={`− ${formatAmount(expensesTotal)}`} />
         ) : null}
         <div
           style={{
@@ -120,7 +125,7 @@ export function DeductionFooter({
             borderRadius: "6px",
           }}
         >
-          <span style={{ fontSize: "13px", fontWeight: 700 }}>{fa.sheets.grandTotal}</span>
+          <span style={{ fontSize: "13px", fontWeight: 700 }}>{t.sheets.grandTotal}</span>
           <span
             style={{
               fontSize: "22px",
@@ -160,10 +165,11 @@ export function TotalLine({ label, value }: { label: string; value: string }) {
 
 /** حق reads as "حق (۵٪)" when it was entered as a percentage. */
 export function commissionLabel(
+  t: Dictionary,
   commission: number | null | undefined,
   isPercent: boolean
 ): string {
   return isPercent && commission
-    ? `${fa.sheets.commission} (${commission}${fa.sheets.percent})`
-    : fa.sheets.commission
+    ? `${t.sheets.commission} (${commission}${t.sheets.percent})`
+    : t.sheets.commission
 }

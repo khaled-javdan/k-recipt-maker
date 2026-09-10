@@ -24,10 +24,12 @@ import {
   uploadLogo,
 } from "@/actions/settings"
 import { toLatinDigits } from "@/lib/calc"
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 import type { LedgerColumns, ReceiptColumns, Settings } from "@/lib/types"
 
 export function SettingsForm({ settings }: { settings: Settings }) {
+  const t = useT()
+
   const router = useRouter()
   const [primary, setPrimary] = useState(settings.primaryColor)
   const [accent, setAccent] = useState(settings.accentColor)
@@ -56,7 +58,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       return
     }
     setLogoUrl(result.url ?? null)
-    toast.success(fa.settings.logoUploaded)
+    toast.success(t.settings.logoUploaded)
     // The sidebar reads the logo from the layout, which is a server component.
     router.refresh()
   }
@@ -66,7 +68,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     await removeLogo()
     setLogoBusy(false)
     setLogoUrl(null)
-    toast.success(fa.settings.logoRemoved)
+    toast.success(t.settings.logoRemoved)
     router.refresh()
   }
 
@@ -80,7 +82,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       toast.error(result.error)
       return
     }
-    toast.success(fa.common.saved)
+    toast.success(t.common.saved)
     router.refresh()
   }
 
@@ -106,15 +108,15 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       toast.error(result.error)
       return
     }
-    toast.success(fa.common.saved)
+    toast.success(t.common.saved)
   }
 
   return (
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>{fa.settings.logo}</CardTitle>
-          <CardDescription>{fa.settings.logoDesc}</CardDescription>
+          <CardTitle>{t.settings.logo}</CardTitle>
+          <CardDescription>{t.settings.logoDesc}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
@@ -125,12 +127,12 @@ export function SettingsForm({ settings }: { settings: Settings }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logoUrl}
-                  alt={fa.settings.logo}
+                  alt={t.settings.logo}
                   className="max-h-full max-w-full object-contain"
                 />
               ) : (
                 <span className="text-muted-foreground px-2 text-center text-xs">
-                  {fa.settings.logoEmpty}
+                  {t.settings.logoEmpty}
                 </span>
               )}
             </div>
@@ -149,14 +151,14 @@ export function SettingsForm({ settings }: { settings: Settings }) {
                 onClick={() => fileInput.current?.click()}
               >
                 {logoBusy
-                  ? fa.settings.uploading
+                  ? t.settings.uploading
                   : logoUrl
-                    ? fa.settings.replaceLogo
-                    : fa.settings.upload}
+                    ? t.settings.replaceLogo
+                    : t.settings.upload}
               </Button>
               {logoUrl ? (
                 <Button variant="ghost" disabled={logoBusy} onClick={clearLogo}>
-                  {fa.settings.removeLogo}
+                  {t.settings.removeLogo}
                 </Button>
               ) : null}
             </div>
@@ -166,13 +168,13 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.settings.branding}</CardTitle>
-          <CardDescription>{fa.settings.brandingDesc}</CardDescription>
+          <CardTitle>{t.settings.branding}</CardTitle>
+          <CardDescription>{t.settings.brandingDesc}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={submitBranding} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="companyName">{fa.settings.companyName}</Label>
+              <Label htmlFor="companyName">{t.settings.companyName}</Label>
               <Input
                 id="companyName"
                 name="companyName"
@@ -183,13 +185,13 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <ColorField
                 id="primaryColor"
-                label={fa.settings.primaryColor}
+                label={t.settings.primaryColor}
                 value={primary}
                 onChange={setPrimary}
               />
               <ColorField
                 id="accentColor"
-                label={fa.settings.accentColor}
+                label={t.settings.accentColor}
                 value={accent}
                 onChange={setAccent}
               />
@@ -197,7 +199,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
             <div>
               <Button type="submit" disabled={saving}>
-                {saving ? fa.editor.saving : fa.actions.save}
+                {saving ? t.editor.saving : t.actions.save}
               </Button>
             </div>
           </form>
@@ -206,31 +208,31 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.settings.receiptColumns}</CardTitle>
-          <CardDescription>{fa.settings.receiptColumnsDesc}</CardDescription>
+          <CardTitle>{t.settings.receiptColumns}</CardTitle>
+          <CardDescription>{t.settings.receiptColumnsDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
           <ToggleRow
             id="sign"
-            label={fa.settings.showSign}
+            label={t.settings.showSign}
             checked={receiptColumns.sign}
             onChange={(v) => toggleReceipt({ sign: v })}
           />
           <ToggleRow
             id="count"
-            label={fa.settings.showCount}
+            label={t.settings.showCount}
             checked={receiptColumns.count}
             onChange={(v) => toggleReceipt({ count: v })}
           />
           <ToggleRow
             id="unitWeight"
-            label={fa.settings.showUnitWeight}
+            label={t.settings.showUnitWeight}
             checked={receiptColumns.unitWeight}
             onChange={(v) => toggleReceipt({ unitWeight: v })}
           />
           <ToggleRow
             id="totalWeight"
-            label={fa.settings.showTotalWeight}
+            label={t.settings.showTotalWeight}
             checked={receiptColumns.totalWeight}
             onChange={(v) => toggleReceipt({ totalWeight: v })}
           />
@@ -239,37 +241,37 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.settings.ledgerColumns}</CardTitle>
-          <CardDescription>{fa.settings.ledgerColumnsDesc}</CardDescription>
+          <CardTitle>{t.settings.ledgerColumns}</CardTitle>
+          <CardDescription>{t.settings.ledgerColumnsDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
           <ToggleRow
             id="invoice"
-            label={fa.settings.showInvoice}
+            label={t.settings.showInvoice}
             checked={ledgerColumns.invoice}
             onChange={(v) => toggleLedger({ invoice: v })}
           />
           <ToggleRow
             id="ledgerCommission"
-            label={fa.settings.showCommission}
+            label={t.settings.showCommission}
             checked={ledgerColumns.commission}
             onChange={(v) => toggleLedger({ commission: v })}
           />
           <ToggleRow
             id="cash"
-            label={fa.settings.showCash}
+            label={t.settings.showCash}
             checked={ledgerColumns.cash}
             onChange={(v) => toggleLedger({ cash: v })}
           />
           <ToggleRow
             id="balance"
-            label={fa.settings.showBalance}
+            label={t.settings.showBalance}
             checked={ledgerColumns.balance}
             onChange={(v) => toggleLedger({ balance: v })}
           />
           <ToggleRow
             id="ledgerDate"
-            label={fa.settings.showDate}
+            label={t.settings.showDate}
             checked={ledgerColumns.date}
             onChange={(v) => toggleLedger({ date: v })}
           />
@@ -278,13 +280,13 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{fa.settings.layout}</CardTitle>
-          <CardDescription>{fa.settings.layoutDesc}</CardDescription>
+          <CardTitle>{t.settings.layout}</CardTitle>
+          <CardDescription>{t.settings.layoutDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="itemsPerColumn">{fa.settings.itemsPerColumn}</Label>
+              <Label htmlFor="itemsPerColumn">{t.settings.itemsPerColumn}</Label>
               <Input
                 id="itemsPerColumn"
                 dir="ltr"
@@ -299,7 +301,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="maxColumns">{fa.settings.maxColumns}</Label>
+              <Label htmlFor="maxColumns">{t.settings.maxColumns}</Label>
               <Input
                 id="maxColumns"
                 dir="ltr"
@@ -315,7 +317,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             </div>
           </div>
           <div>
-            <Button onClick={saveLayout}>{fa.actions.save}</Button>
+            <Button onClick={saveLayout}>{t.actions.save}</Button>
           </div>
         </CardContent>
       </Card>

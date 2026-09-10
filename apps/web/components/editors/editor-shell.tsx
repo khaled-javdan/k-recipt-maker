@@ -3,7 +3,7 @@
 import type { ReactNode } from "react"
 import { Button } from "@workspace/ui/components/button"
 
-import { fa } from "@/lib/fa"
+import { useT } from "@/components/i18n-provider"
 
 export type EditorSummaryItem = {
   label: string
@@ -31,6 +31,8 @@ export function EditorShell({
   summary: EditorSummaryItem[]
   children: ReactNode
 }) {
+  const t = useT()
+
   return (
     <div className="flex min-h-full flex-col">
       <h1 className="mb-4 text-xl font-semibold print:hidden">{title}</h1>
@@ -66,7 +68,7 @@ export function EditorShell({
             ))}
 
             <Button onClick={onSave} disabled={saving} className="ms-auto">
-              {saving ? fa.editor.saving : fa.actions.save}
+              {saving ? t.editor.saving : t.actions.save}
             </Button>
           </div>
         </div>
