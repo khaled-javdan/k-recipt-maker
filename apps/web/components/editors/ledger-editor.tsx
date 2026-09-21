@@ -171,6 +171,8 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
   return (
     <EditorShell
       title={ledger ? t.editor.editLedger : t.editor.newLedger}
+      backHref={ledger ? `/ledgers/${ledger.id}` : "/ledgers"}
+      dirty={dirty}
       saving={saving}
       onSave={submit}
       summary={[

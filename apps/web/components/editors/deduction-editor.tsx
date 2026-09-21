@@ -103,6 +103,7 @@ export function DeductionEditor({
 
   const router = useRouter()
   const isMan = kind === "MAN"
+  const listHref = isMan ? "/manreceipts" : "/pricelists"
 
   const [title, setTitle] = useState(document?.title ?? "")
   const [date, setDate] = useState(document?.date ?? today())
@@ -252,7 +253,7 @@ export function DeductionEditor({
       setDirty(false)
       draft.clear()
       toast.success(t.common.saved)
-      router.push(`${isMan ? "/manreceipts" : "/pricelists"}/${result.id}`)
+      router.push(`${listHref}/${result.id}`)
     } catch {
       // A dropped connection must not pass for a save. The document stays
       // dirty so the unsaved-changes guard keeps protecting it — and `saving`
@@ -277,6 +278,8 @@ export function DeductionEditor({
   return (
     <EditorShell
       title={editorTitle(kind, Boolean(document))}
+      backHref={document ? `${listHref}/${document.id}` : listHref}
+      dirty={dirty}
       saving={saving}
       onSave={submit}
       summary={summary}

@@ -19,6 +19,7 @@ import { Label } from "@workspace/ui/components/label"
 import { deleteCatalogItem, saveCatalogItem } from "@/actions/reference"
 import { catalogKey } from "@/lib/catalog-key"
 import { formatAmount, parseNumber, toLatinDigits } from "@/lib/calc"
+import { BackLink } from "@/components/back-link"
 import { useT } from "@/components/i18n-provider"
 import type { CatalogItem, CatalogKind } from "@/lib/types"
 
@@ -63,9 +64,12 @@ export function CatalogManager({
   return (
     <>
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">
-          {kind === "PRICE" ? t.catalog.priceTitle : t.catalog.manTitle}
-        </h1>
+        <div className="flex items-center gap-2">
+          <BackLink href={kind === "PRICE" ? "/pricelists" : "/manreceipts"} />
+          <h1 className="text-xl font-semibold">
+            {kind === "PRICE" ? t.catalog.priceTitle : t.catalog.manTitle}
+          </h1>
+        </div>
         <Button
           onClick={() => {
             setEditing(null)

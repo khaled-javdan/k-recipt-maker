@@ -26,6 +26,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 
 import { exportAsImage, exportAsPdf } from "@/lib/export"
+import { BackLink } from "@/components/back-link"
 import { useT } from "@/components/i18n-provider"
 
 // One toolbar for all four document types: print, the two exports, edit and
@@ -33,11 +34,13 @@ import { useT } from "@/components/i18n-provider"
 // which document it is showing.
 export function DocumentView({
   filename,
+  backHref,
   editHref,
   onDelete,
   children,
 }: {
   filename: string
+  backHref: string
   editHref: string
   onDelete: () => Promise<void>
   children: ReactNode
@@ -62,6 +65,10 @@ export function DocumentView({
 
   return (
     <div className="grid gap-4">
+      <div>
+        <BackLink href={backHref} />
+      </div>
+
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button variant="outline" size="sm" onClick={() => window.print()}>
           <HugeiconsIcon icon={PrinterIcon} />

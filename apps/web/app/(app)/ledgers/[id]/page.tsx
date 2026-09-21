@@ -14,6 +14,7 @@ export default async function LedgerViewPage({
   return (
     <DocumentView
       filename={`ledger-${ledger.number}`}
+      backHref="/ledgers"
       editHref={`/ledgers/${ledger.id}/edit`}
       onDelete={async () => {
         "use server"

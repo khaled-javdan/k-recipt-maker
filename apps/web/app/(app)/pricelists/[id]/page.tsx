@@ -14,6 +14,7 @@ export default async function PriceListViewPage({
   return (
     <DocumentView
       filename={`pricelist-${priceList.number}`}
+      backHref="/pricelists"
       editHref={`/pricelists/${priceList.id}/edit`}
       onDelete={async () => {
         "use server"

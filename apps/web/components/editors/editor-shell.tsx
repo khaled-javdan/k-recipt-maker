@@ -1,8 +1,20 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
+import { useRouter } from "next/navigation"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
 import { Button } from "@workspace/ui/components/button"
 
+import { BackLink } from "@/components/back-link"
 import { useT } from "@/components/i18n-provider"
 
 export type EditorSummaryItem = {
@@ -20,22 +32,54 @@ export type EditorSummaryItem = {
 // without reaching under the sidebar.
 export function EditorShell({
   title,
+  backHref,
+  dirty,
   saving,
   onSave,
   summary,
   children,
 }: {
   title: string
+  backHref: string
+  /** Unsaved edits: leaving through the back link asks first. */
+  dirty: boolean
   saving: boolean
   onSave: () => void
   summary: EditorSummaryItem[]
   children: ReactNode
 }) {
   const t = useT()
+  const router = useRouter()
+  const [leaving, setLeaving] = useState(false)
 
   return (
     <div className="flex min-h-full flex-col">
-      <h1 className="mb-4 text-xl font-semibold print:hidden">{title}</h1>
+      <div className="mb-4 flex items-center gap-2 print:hidden">
+        <BackLink
+          href={backHref}
+          onClick={(e) => {
+            if (!dirty) return
+            e.preventDefault()
+            setLeaving(true)
+          }}
+        />
+        <h1 className="text-xl font-semibold">{title}</h1>
+      </div>
+
+      <AlertDialog open={leaving} onOpenChange={setLeaving}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.editor.unsavedTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.editor.unsavedBody}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.editor.stay}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => router.push(backHref)}>
+              {t.editor.discard}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="grid gap-4">{children}</div>
 

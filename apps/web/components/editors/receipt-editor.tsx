@@ -204,6 +204,8 @@ export function ReceiptEditor({
   return (
     <EditorShell
       title={receipt ? t.editor.editReceipt : t.editor.newReceipt}
+      backHref={receipt ? `/receipts/${receipt.id}` : "/receipts"}
+      dirty={dirty}
       saving={saving}
       onSave={submit}
       summary={[

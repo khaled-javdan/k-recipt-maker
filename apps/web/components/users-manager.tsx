@@ -28,6 +28,7 @@ import {
   revokeUserSessions,
   setUserActive,
 } from "@/actions/users"
+import { BackLink } from "@/components/back-link"
 import { useT } from "@/components/i18n-provider"
 
 export type ManagedUser = {
@@ -67,7 +68,10 @@ export function UsersManager({
   return (
     <>
       <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t.settings.users}</h1>
+        <div className="flex items-center gap-2">
+          <BackLink href="/settings" />
+          <h1 className="text-xl font-semibold">{t.settings.users}</h1>
+        </div>
         <Button
           onClick={() => {
             setRole("USER")

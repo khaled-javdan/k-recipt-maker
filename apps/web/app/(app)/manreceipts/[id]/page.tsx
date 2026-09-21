@@ -14,6 +14,7 @@ export default async function ManReceiptViewPage({
   return (
     <DocumentView
       filename={`man-receipt-${manReceipt.number}`}
+      backHref="/manreceipts"
       editHref={`/manreceipts/${manReceipt.id}/edit`}
       onDelete={async () => {
         "use server"
