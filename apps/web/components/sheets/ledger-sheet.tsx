@@ -34,6 +34,13 @@ export function LedgerSheet({
   const { primaryColor, accentColor } = settings
   const { cumulative, grandTotal } = ledgerBalances(ledger.rows)
 
+  // Column sums for the two sides of the account: what was invoiced and what
+  // was paid in cash. They sit on their own band above الباقي so the closing
+  // figure can be read against them.
+  const invoiceTotal = ledger.rows.reduce((sum, r) => sum + r.invoice, 0)
+  const cashTotal = ledger.rows.reduce((sum, r) => sum + r.cash, 0)
+  const showSums = cols.invoice || cols.cash
+
   type Row = Ledger["rows"][number]
   const columns: SheetColumn<Row>[] = [
     { key: "name", label: t.common.name, strong: true, render: (r) => r.name },
@@ -81,7 +88,7 @@ export function LedgerSheet({
     })
   }
 
-  // The جمع figure belongs in the مانده column. With مانده hidden there is no
+  // The الباقي figure belongs in the balance column. With it hidden there is no
   // column to put it under, so the label carries the number itself and spans
   // the row instead.
   const preBalanceCount =
@@ -109,19 +116,39 @@ export function LedgerSheet({
         primaryColor={primaryColor}
         rowKey={(r) => r.id}
         footer={
-          <tr>
-            <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
-              {cols.balance
-                ? t.sheets.ledgerTotal
-                : `${t.sheets.ledgerTotal}: ${formatAmount(grandTotal)}`}
-            </td>
-            {cols.balance ? (
-              <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
-                {formatAmount(grandTotal)}
-              </td>
+          <>
+            {showSums ? (
+              <tr>
+                <td style={footerCell({ fontWeight: 600 })}>{t.sheets.ledgerSums}</td>
+                {cols.invoice ? (
+                  <td style={footerCell({ numeric: true, fontWeight: 600 })}>
+                    {formatAmount(invoiceTotal)}
+                  </td>
+                ) : null}
+                {cols.commission ? <td style={footerCell()} /> : null}
+                {cols.cash ? (
+                  <td style={footerCell({ numeric: true, fontWeight: 600 })}>
+                    {formatAmount(cashTotal)}
+                  </td>
+                ) : null}
+                {cols.balance ? <td style={footerCell()} /> : null}
+                {cols.date ? <td style={footerCell()} /> : null}
+              </tr>
             ) : null}
-            {cols.balance && cols.date ? <td style={footerCell()} /> : null}
-          </tr>
+            <tr>
+              <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
+                {cols.balance
+                  ? t.sheets.ledgerTotal
+                  : `${t.sheets.ledgerTotal}: ${formatAmount(grandTotal)}`}
+              </td>
+              {cols.balance ? (
+                <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
+                  {formatAmount(grandTotal)}
+                </td>
+              ) : null}
+              {cols.balance && cols.date ? <td style={footerCell()} /> : null}
+            </tr>
+          </>
         }
       />
 

@@ -110,6 +110,7 @@ export const en: Dictionary = {
 
     receiptNumberLabel: "Receipt number",
     ledgerTitleLabel: "Account name",
+    ledgerSums: "Totals",
     ledgerTotal: "Total",
     listTitleLabel: "Client / list name",
     noClient: "No client",
