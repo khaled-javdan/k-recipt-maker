@@ -6,6 +6,7 @@ import { Logout01Icon, Moon02Icon, Sun01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@workspace/ui/components/button"
 import { SidebarTrigger } from "@workspace/ui/components/sidebar"
 
+import { BackButton } from "@/components/back-button"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { LayoutWidthToggle } from "@/components/layout-width"
 import { signOut } from "@/actions/auth"
@@ -20,6 +21,7 @@ export function AppHeader({ user }: { user: CurrentUser }) {
   return (
     <header className="bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4 backdrop-blur print:hidden">
       <SidebarTrigger />
+      <BackButton />
 
       <span className="text-sm font-medium">{user.displayName}</span>
 

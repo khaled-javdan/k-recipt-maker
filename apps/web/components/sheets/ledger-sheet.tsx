@@ -2,7 +2,7 @@
 
 import type { Ref } from "react"
 
-import { formatAmount, formatMoney, ledgerBalances } from "@/lib/calc"
+import { formatAmount, ledgerBalances } from "@/lib/calc"
 import { useT } from "@/components/i18n-provider"
 import type { Ledger, Settings } from "@/lib/types"
 
@@ -112,12 +112,12 @@ export function LedgerSheet({
           <tr>
             <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
               {cols.balance
-                ? t.common.total
-                : `${t.common.total}: ${formatMoney(grandTotal)}`}
+                ? t.sheets.ledgerTotal
+                : `${t.sheets.ledgerTotal}: ${formatAmount(grandTotal)}`}
             </td>
             {cols.balance ? (
               <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
-                {formatMoney(grandTotal)}
+                {formatAmount(grandTotal)}
               </td>
             ) : null}
             {cols.balance && cols.date ? <td style={footerCell()} /> : null}

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react"
 
-import { formatAmount, formatMoney } from "@/lib/calc"
+import { formatAmount } from "@/lib/calc"
 import { useT } from "@/components/i18n-provider"
 import type { Dictionary } from "@/lib/i18n"
 import type { ExpenseItem } from "@/lib/types"
@@ -134,7 +134,7 @@ export function DeductionFooter({
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            {formatMoney(grandTotal)}
+            {formatAmount(grandTotal)}
           </span>
         </div>
       </div>
