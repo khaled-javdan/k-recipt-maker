@@ -110,7 +110,7 @@ export const ar: Dictionary = {
 
     receiptNumberLabel: "فاتورة رقم",
     ledgerTitleLabel: "اسم الحساب",
-    ledgerSums: "المجموع",
+    ledgerSums: "مجموع الفاتورة والنقدي",
     ledgerTotal: "المجموع",
     listTitleLabel: "اسم العميل / القائمة",
     noClient: "بدون عميل",
