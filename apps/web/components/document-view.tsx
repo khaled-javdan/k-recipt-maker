@@ -25,7 +25,7 @@ import {
 } from "@workspace/ui/components/alert-dialog"
 import { Button } from "@workspace/ui/components/button"
 
-import { exportAsImage, exportAsPdf } from "@/lib/export"
+import { canPrint, exportAsImage, exportAsPdf } from "@/lib/export"
 import { BackLink } from "@/components/back-link"
 import { useT } from "@/components/i18n-provider"
 
@@ -70,7 +70,12 @@ export function DocumentView({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={() => (canPrint() ? window.print() : runExport(exportAsPdf))}
+        >
           <HugeiconsIcon icon={PrinterIcon} />
           {t.actions.print}
         </Button>
@@ -131,7 +136,7 @@ export function DocumentView({
 
       {/* The sheet is fixed-width; on a narrow screen it scrolls rather than
           reflowing, so what is exported matches what is shown. */}
-      <div className="overflow-x-auto">
+      <div data-sheet-scroll className="overflow-x-auto">
         <div ref={sheetRef} className="mx-auto w-fit shadow-sm print:shadow-none">
           {children}
         </div>

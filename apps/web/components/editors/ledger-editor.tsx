@@ -21,6 +21,7 @@ import { saveLedger } from "@/actions/documents"
 import {
   formatAmount,
   ledgerBalances,
+  ledgerClosing,
   parseNumber,
   roundMoneyInput,
 } from "@/lib/calc"
@@ -127,7 +128,8 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
     commission: parseNumber(r.commission),
     cash: parseNumber(r.cash),
   }))
-  const { cumulative, grandTotal } = ledgerBalances(amounts)
+  const { cumulative } = ledgerBalances(amounts)
+  const { closing } = ledgerClosing(amounts)
 
   const update = (index: number, patch: Partial<DraftRow>) => {
     setRows((r) => replaceAt(r, index, { ...r[index]!, ...patch }))
@@ -177,7 +179,7 @@ export function LedgerEditor({ ledger }: { ledger: Ledger | null }) {
       onSave={submit}
       summary={[
         { label: t.common.items, value: String(rows.length) },
-        { label: t.sheets.balance, value: formatAmount(grandTotal), strong: true },
+        { label: t.sheets.balance, value: formatAmount(closing), strong: true },
       ]}
     >
       <Card>

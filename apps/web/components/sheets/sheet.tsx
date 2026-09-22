@@ -49,6 +49,7 @@ export function SheetFrame({
   return (
     <div
       ref={ref}
+      data-sheet
       dir="rtl"
       lang="fa"
       style={{

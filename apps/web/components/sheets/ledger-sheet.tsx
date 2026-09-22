@@ -2,7 +2,7 @@
 
 import type { Ref } from "react"
 
-import { formatAmount, ledgerBalances } from "@/lib/calc"
+import { formatAmount, ledgerBalances, ledgerClosing } from "@/lib/calc"
 import { useT } from "@/components/i18n-provider"
 import type { Ledger, Settings } from "@/lib/types"
 
@@ -17,8 +17,8 @@ import {
   type SheetColumn,
 } from "./sheet"
 
-// حساب — the account sheet. مانده is cumulative: each row carries the previous
-// rows forward, and the sheet's total is simply the last row's figure.
+// حساب — the account sheet. The running column carries each row forward; the
+// closing الباقي underneath is فاتوره minus نقدي over the whole sheet.
 export function LedgerSheet({
   ref,
   ledger,
@@ -32,13 +32,11 @@ export function LedgerSheet({
 
   const cols = settings.ledgerColumns
   const { primaryColor, accentColor } = settings
-  const { cumulative, grandTotal } = ledgerBalances(ledger.rows)
+  const { cumulative } = ledgerBalances(ledger.rows)
 
-  // Column sums for the two sides of the account: what was invoiced and what
-  // was paid in cash. They sit on their own band above الباقي so the closing
-  // figure can be read against them.
-  const invoiceTotal = ledger.rows.reduce((sum, r) => sum + r.invoice, 0)
-  const cashTotal = ledger.rows.reduce((sum, r) => sum + r.cash, 0)
+  // Column sums for the two sides of the account, on their own band above
+  // الباقي, which is their difference.
+  const { invoiceTotal, cashTotal, closing } = ledgerClosing(ledger.rows)
   const showSums = cols.invoice || cols.cash
 
   type Row = Ledger["rows"][number]
@@ -139,11 +137,11 @@ export function LedgerSheet({
               <td colSpan={labelColSpan} style={footerCell({ fontWeight: 700 })}>
                 {cols.balance
                   ? t.sheets.ledgerTotal
-                  : `${t.sheets.ledgerTotal}: ${formatAmount(grandTotal)}`}
+                  : `${t.sheets.ledgerTotal}: ${formatAmount(closing)}`}
               </td>
               {cols.balance ? (
                 <td style={footerCell({ numeric: true, fontWeight: 700, accentColor })}>
-                  {formatAmount(grandTotal)}
+                  {formatAmount(closing)}
                 </td>
               ) : null}
               {cols.balance && cols.date ? <td style={footerCell()} /> : null}

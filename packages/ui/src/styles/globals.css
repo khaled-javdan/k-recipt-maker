@@ -163,3 +163,64 @@
     transform: none;
   }
 }
+
+/* Printing a sheet: only the sheet. The app chrome goes, the 760px sheet is
+   let out to the page width, and the table breaks between rows with its header
+   repeated. Colours are kept — the header band is part of the design. */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-slot="sidebar"],
+  [data-slot="sidebar-gap"],
+  [data-slot="sidebar-container"],
+  [data-slot="sidebar-rail"] {
+    display: none !important;
+  }
+
+  [data-slot="sidebar-wrapper"],
+  [data-slot="sidebar-inset"] {
+    display: block !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  [data-sheet-scroll] {
+    overflow: visible !important;
+  }
+
+  [data-sheet] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  [data-sheet] table {
+    overflow: visible !important;
+  }
+
+  [data-sheet] thead {
+    display: table-header-group;
+  }
+
+  [data-sheet] tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

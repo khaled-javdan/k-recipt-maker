@@ -7,6 +7,7 @@ import {
   formatUnitWeight,
   layoutColumns,
   ledgerBalances,
+  ledgerClosing,
   MAN_KG,
   manLineAmount,
   manReceiptTotals,
@@ -209,6 +210,15 @@ describe("ledger balances", () => {
 
   it("returns zero for an empty ledger", () => {
     expect(ledgerBalances([])).toEqual({ cumulative: [], grandTotal: 0 })
+  })
+
+  it("closes the sheet on invoice minus cash, leaving commission out", () => {
+    expect(
+      ledgerClosing([
+        { invoice: 100, commission: 5, cash: 40 },
+        { invoice: 200, commission: 10, cash: 50 },
+      ])
+    ).toEqual({ invoiceTotal: 300, cashTotal: 90, closing: 210 })
   })
 })
 
