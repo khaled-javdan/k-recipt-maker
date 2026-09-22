@@ -112,7 +112,7 @@ export const fa = {
     // headline is: a number on فیش, a title on the other three.
     receiptNumberLabel: "فاکتور شماره",
     ledgerTitleLabel: "عنوان حساب",
-    ledgerSums: "جمع فاتوره و نقدي",
+    ledgerSums: "جمع",
     ledgerTotal: "الباقي",
     listTitleLabel: "نام مشتری / لیست",
     noClient: "بدون مشتری",

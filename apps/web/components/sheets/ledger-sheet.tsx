@@ -34,10 +34,11 @@ export function LedgerSheet({
   const { primaryColor, accentColor } = settings
   const { cumulative, grandTotal } = ledgerBalances(ledger.rows)
 
-  // فاتوره and نقدي added together, on their own band above الباقي. It is a
-  // single figure the customer asks for, not a column total, so it is laid
-  // out like the closing balance rather than under either column.
-  const invoiceAndCash = ledger.rows.reduce((sum, r) => sum + r.invoice + r.cash, 0)
+  // Column sums for the two sides of the account: what was invoiced and what
+  // was paid in cash. They sit on their own band above الباقي so the closing
+  // figure can be read against them.
+  const invoiceTotal = ledger.rows.reduce((sum, r) => sum + r.invoice, 0)
+  const cashTotal = ledger.rows.reduce((sum, r) => sum + r.cash, 0)
   const showSums = cols.invoice || cols.cash
 
   type Row = Ledger["rows"][number]
@@ -118,17 +119,20 @@ export function LedgerSheet({
           <>
             {showSums ? (
               <tr>
-                <td colSpan={labelColSpan} style={footerCell({ fontWeight: 600 })}>
-                  {cols.balance
-                    ? t.sheets.ledgerSums
-                    : `${t.sheets.ledgerSums}: ${formatAmount(invoiceAndCash)}`}
-                </td>
-                {cols.balance ? (
+                <td style={footerCell({ fontWeight: 600 })}>{t.sheets.ledgerSums}</td>
+                {cols.invoice ? (
                   <td style={footerCell({ numeric: true, fontWeight: 600 })}>
-                    {formatAmount(invoiceAndCash)}
+                    {formatAmount(invoiceTotal)}
                   </td>
                 ) : null}
-                {cols.balance && cols.date ? <td style={footerCell()} /> : null}
+                {cols.commission ? <td style={footerCell()} /> : null}
+                {cols.cash ? (
+                  <td style={footerCell({ numeric: true, fontWeight: 600 })}>
+                    {formatAmount(cashTotal)}
+                  </td>
+                ) : null}
+                {cols.balance ? <td style={footerCell()} /> : null}
+                {cols.date ? <td style={footerCell()} /> : null}
               </tr>
             ) : null}
             <tr>
